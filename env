@@ -31,8 +31,8 @@ CI_ENVIRONMENT = development
 #--------------------------------------------------------------------
 
 database.default.hostname = 52.237.90.199
-database.default.database = NPM_Mahasiswa
-database.default.username = NPM_Mahasiswa
+database.default.database = kantin_<NPM_Mahasiswa>
+database.default.username = <NPM_Mahasiswa>
 database.default.password = root
 database.default.DBDriver = MySQLi
 database.default.DBPrefix =
