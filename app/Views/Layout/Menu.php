@@ -53,6 +53,8 @@
             <a class="nav-link" href="/data"><i class="bi bi-database me-2"></i>Data</a>
             <a class="nav-link" href="/transaction"><i class="bi bi-cart3 me-2"></i>Transaction</a>
             <a class="nav-link" href="/report"><i class="bi bi-file-earmark-bar-graph me-2"></i>Report</a>
+            <hr>
+            <a class="nav-link text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
         </nav>
     </div>
 </div>
@@ -75,6 +77,10 @@
                     </a>
                     <a class="nav-link" href="/report">
                         <i class="bi bi-file-earmark-bar-graph me-2"></i>Report
+                    </a>
+                    <hr>
+                    <a class="nav-link text-danger" href="/logout">
+                        <i class="bi bi-box-arrow-right me-2"></i>Logout
                     </a>
                 </nav>
             </div>
