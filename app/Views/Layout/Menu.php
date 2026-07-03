@@ -31,6 +31,21 @@
             <?= env('app.name', 'Kantin') ?>
         </a>
 
+        <!-- User Info + Logout Button (hanya tampil kalau sudah login) -->
+        <?php if (session()->get('isLoggedIn')): ?>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <span class="text-light small d-none d-sm-inline">
+                    <i class="bi bi-person-circle me-1"></i>
+                    <?= esc(session()->get('npm') ?? '') ?>
+                    <span class="badge bg-secondary ms-1"><?= esc(session()->get('role') ?? '') ?></span>
+                </span>
+                <a href="<?= site_url('/logout') ?>" class="btn btn-sm btn-outline-light" title="Logout">
+                    <i class="bi bi-box-arrow-right me-1"></i>
+                    <span class="d-none d-sm-inline">Logout</span>
+                </a>
+            </div>
+        <?php endif; ?>
+
         <!-- Hamburger Menu Button for Mobile Sidebar Toggle -->
         <button class="btn btn-outline-light d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
             <i class="bi bi-list fs-4"></i>
