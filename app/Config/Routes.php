@@ -4,16 +4,15 @@ use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 
-// Halaman publik (auth) — siapa saja boleh akses.
-$routes->get('/login',    'Auth::login');
-$routes->post('/login',   'Auth::login');
-$routes->get('/register', 'Auth::register');
-$routes->post('/register','Auth::register');
-$routes->get('/logout',   'Auth::logout');
-
-// Halaman yang diproteksi login — pakai filter 'auth' (lihat Config\Filters).
-// Filter hanya mengarahkan user belum-login ke /login. TIDAK mengubah
-// template Kantin (Header/Menu/Footer/Home) yang sudah ada.
+// Protected routes - butuh login backoffice
 $routes->get('/', 'Home::index', ['filter' => 'auth']);
+$routes->get('/sample', 'Home::Sample', ['filter' => 'auth']);
 
-$routes->get('/sample', 'Home::Sample');
+// Auth routes (public - tidak butuh login)
+$routes->get('/login', 'Auth::login');
+$routes->post('/login', 'Auth::loginProcess');
+$routes->get('/logout', 'Auth::logout');
+
+// Catatan: Tidak ada route /register untuk backoffice.
+// Registrasi mahasiswa (client side) akan dikerjakan terpisah
+// di routing /mahasiswa/* setelah backend backoffice selesai.
