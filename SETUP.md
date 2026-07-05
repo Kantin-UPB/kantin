@@ -1,6 +1,7 @@
 ## Langkah-langkah Setup Project
 
 ### 1. Rename Environment File
+
 ```bash
 rename env jadi .env
 ```
@@ -20,21 +21,25 @@ database.default.port = 3306
 ```
 
 ### 3. Install Dependencies
+
 ```bash
 composer install
 ```
 
 ### 4. Jalankan Migration
+
 ```bash
 php spark migrate
 ```
 
 ### 5. Seed Database
+
 ```bash
 php spark db:seed UserSeeder
 ```
 
 **Sample Akun Admin Default:**
+
 - Username: `Admin`
 - Password: `Kantin123456UPB`
 
