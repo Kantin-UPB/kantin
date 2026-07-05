@@ -1,0 +1,357 @@
+/* =====================================================================
+   Kantin UPB — Auth (Login & Register)
+   Design language: Linear / Stripe inspired — diadaptasi dari
+   referensi php-login dengan sentuhan warna Kantin UPB.
+
+   Halaman ini STANDALONE — tidak memakai template Kantin
+   (Layout/Header, Layout/Menu, Layout/Footer) supaya UI login
+   tidak ikut sidebar dashboard.
+   ===================================================================== */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  /* Palette — Clean Minimal (kompromis dengan Kantin: biru kantin) */
+  --bg:           #FAFAFA;
+  --bg-card:      #FFFFFF;
+  --bg-subtle:    #F4F4F5;
+  --bg-hover:     #F9FAFB;
+
+  --border:       #E4E4E7;
+  --border-strong:#D4D4D8;
+
+  --text:         #18181B;
+  --text-muted:   #71717A;
+  --text-subtle:  #A1A1AA;
+
+  --primary:      #0d6efd; /* Bootstrap primary — selaras dgn Kantin */
+  --primary-dark: #0b5ed7;
+  --primary-light:#EEF2FF;
+
+  --success:      #10B981;
+  --success-bg:   #ECFDF5;
+  --error:        #EF4444;
+  --error-bg:     #FEF2F2;
+  --warning:      #F59E0B;
+  --warning-bg:   #FFFBEB;
+  --info:         #3B82F6;
+  --info-bg:      #EFF6FF;
+
+  --radius-sm:    6px;
+  --radius:       10px;
+  --radius-lg:    16px;
+
+  --shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow:       0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg:    0 16px 40px rgba(0, 0, 0, 0.08);
+
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto',
+          'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Monaco', 'Consolas', 'Courier New', monospace;
+}
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: var(--primary); text-decoration: none; }
+a:hover { color: var(--primary-dark); text-decoration: underline; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--bg-subtle);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  color: var(--text);
+}
+
+/* ===================== Auth Card ===================== */
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--bg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-card__header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-card__logo {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1rem;
+  background: var(--primary);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.3rem;
+}
+
+.auth-card__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
+  color: var(--text);
+}
+
+.auth-card__subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* ===================== Forms ===================== */
+.form-group {
+  margin-bottom: 1.1rem;
+}
+
+.form-group__label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.01em;
+}
+
+.form-group__input-wrap {
+  position: relative;
+}
+
+.form-group__input-wrap .fas {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-subtle);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.7rem 0.9rem 0.7rem 2.4rem;
+  font-size: 0.92rem;
+  font-family: inherit;
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  transition: all 0.15s ease;
+  padding-right: 2.5rem;
+}
+.form-control::placeholder { color: var(--text-subtle); }
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+.form-control.is-invalid {
+  border-color: var(--error);
+  background: var(--error-bg);
+}
+
+/* NPM input — biar terasa numerik */
+.form-control--npm {
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.form-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+  line-height: 1.4;
+}
+
+/* Password toggle */
+.password-toggle {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.password-toggle:hover {
+  color: var(--text);
+  background: var(--bg-subtle);
+}
+.password-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+.password-toggle svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+/* Checkbox */
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.86rem;
+  color: var(--text);
+  cursor: pointer;
+  margin: 0;
+}
+.form-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* ===================== Buttons ===================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  line-height: 1.2;
+}
+.btn:hover { text-decoration: none; }
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.btn-primary:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+}
+
+.btn-block { width: 100%; }
+.btn-sm { padding: 0.5rem 0.85rem; font-size: 0.85rem; }
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.25rem 0;
+  color: var(--text-subtle);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.divider span { padding: 0 0.75rem; }
+
+/* ===================== Alert / Flash ===================== */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  line-height: 1.45;
+}
+.alert .fas { margin-top: 2px; flex-shrink: 0; }
+.alert-success { background: var(--success-bg); border-color: rgba(16, 185, 129, 0.25); color: #065F46; }
+.alert-error   { background: var(--error-bg);   border-color: rgba(239, 68, 68, 0.25);  color: #991B1B; }
+.alert-warning { background: var(--warning-bg); border-color: rgba(245, 158, 11, 0.25); color: #92400E; }
+.alert-info    { background: var(--info-bg);    border-color: rgba(59, 130, 246, 0.25); color: #1E40AF; }
+
+/* ===================== Auth footer ===================== */
+.auth-card__footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.87rem;
+  color: var(--text-muted);
+}
+.auth-card__footer a {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.auth-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5rem 0 1.25rem;
+  font-size: 0.85rem;
+}
+.auth-card__row a {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+.auth-card__row a:hover { color: var(--primary); }
+
+.demo-hint {
+  margin-top: 1rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--primary-light);
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  color: var(--primary-dark);
+}
+.demo-hint code {
+  background: #fff;
+  color: var(--primary-dark);
+}
+
+/* ===================== Responsive ===================== */
+@media (max-width: 480px) {
+  body { font-size: 14px; }
+  .auth-card { padding: 2rem 1.5rem; }
+  .auth-card__title { font-size: 1.3rem; }
+}
