@@ -8,29 +8,41 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Generate SHA-256 hash for the password (sama dengan kontrak
-        // existing project Kantin: hash('sha256', $plaintext)).
-        $passwordSalt = 'Kantin123456UPB'; // 'Kantin' . '123456' . 'UPB'
-        $hashedPassword = hash('sha256', $passwordSalt);
+        // Generate SHA-256 hash untuk password admin backoffice
+        // Password: Kantin123456UPB (sesuai SETUP.md)
+        $adminPassword = 'Kantin123456UPB';
+        $adminHash     = hash('sha256', $adminPassword);
 
-        // Current timestamp in the configured format
         $currentDateTime = date('Y-m-d H:i:s');
 
-        // User data — admin memakai NPM placeholder 9-digit "123456789"
-        // karena seluruh login (termasuk admin) wajib pakai NPM 9 digit.
-        // Admin asli di kampus tidak punya NPM mahasiswa, jadi NPM ini
-        // hanya sebagai identifier login akun admin default.
+        // ===============================================
+        // Data admin backoffice
+        // ===============================================
+        // - username: bebas (sesuai clarification poin 4)
+        // - npm: NULL (backoffice tidak punya NPM)
+        // - login_type: 'backoffice'
+        // - role: 'Admin'
+        // ===============================================
         $userData = [
-            'npm'        => '123456789',
-            'password'   => $hashedPassword,
-            'role'       => 'Admin',
-            'createdby'  => 0,
-            'createdat'  => $currentDateTime,
-            'updatedby'  => 0,
-            'updatedat'  => $currentDateTime,
+            'username'    => 'Admin',
+            'npm'         => null,
+            'password'    => $adminHash,
+            'role'        => 'Admin',
+            'login_type'  => 'backoffice',
+            'createdby'   => 0,
+            'createdat'   => $currentDateTime,
+            'updatedby'   => 0,
+            'updatedat'   => $currentDateTime,
         ];
 
-        // Insert using Query Builder
-        $this->db->table('user')->insert($userData);
+        // Cek apakah user sudah ada (hindari duplikasi saat seeder dijalankan ulang)
+        $existing = $this->db->table('user')
+            ->where('username', $userData['username'])
+            ->where('login_type', 'backoffice')
+            ->countAllResults();
+
+        if ($existing === 0) {
+            $this->db->table('user')->insert($userData);
+        }
     }
 }
