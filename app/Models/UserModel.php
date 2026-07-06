@@ -4,56 +4,84 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-/**
- * UserModel — representasi tabel `user`.
- *
- * Skema tabel (lihat migration 2026-06-26-191114_CreateUser + 2026-07-01-000000_AlterUserNpm):
- *   id         INT UNSIGNED PK AUTO_INCREMENT
- *   npm        CHAR(9)        UNIQUE NOT NULL  — pengganti username/email
- *   password   CHAR(64)       SHA-256 hash
- *   role       ENUM('Admin','Penjual','Pembeli')
- *   createdby  INT UNSIGNED
- *   createdat  DATETIME
- *   updatedby  INT UNSIGNED
- *   updatedat  DATETIME
- *
- * Catatan: password disimpan sebagai hash('sha256', $plaintext) sesuai
- * kontrak existing project Kantin (lihat UserSeeder).
- */
 class UserModel extends Model
 {
-    protected $table         = 'user';
-    protected $primaryKey    = 'id';
+    protected $table            = 'user';
+    protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType     = 'array';
-    protected $useSoftDeletes = false;
+    protected $returnType       = 'array';
+    protected $useSoftDeletes   = false;
 
-    /** Field yang boleh diisi lewat insert/update mass-assignment. */
+    // Field yang boleh di-insert / update via model
+    // Catatan: kolom `username` untuk backoffice (bebas),
+    //          kolom `npm` untuk mahasiswa / client side (9 digit angka).
     protected $allowedFields = [
+        'username',
         'npm',
         'password',
         'role',
+        'login_type',
         'createdby',
         'createdat',
         'updatedby',
         'updatedat',
     ];
 
-    // Default timestamps — kita pakai field `createdat` / `updatedat`
-    // (camelCase, sesuai skema existing), bukan `created_at`/`updated_at`.
-    protected $useTimestamps      = false;
-    protected $dateFormat         = 'datetime';
-    protected $createdField       = 'createdat';
-    protected $updatedField       = 'updatedat';
+    // Default timestamps nonaktif - tabel pakai field createdat/updatedat manual
+    protected $useTimestamps = false;
+
+    // Validation rules default (untuk backoffice - username bebas).
+    // Untuk register mahasiswa (client side nanti), rule NPM 9 digit
+    // akan didefinisikan di controller atau dipisah ke validation group.
+    protected $validationRules = [
+        'username'    => 'permit_empty|max_length[75]|is_unique[user.username,id,{id}]',
+        'password'    => 'required|min_length[6]',
+        'login_type'  => 'required|in_list[backoffice,mahasiswa]',
+        'role'        => 'required|in_list[Admin,Penjual,Pembeli]',
+    ];
+
+    protected $validationMessages = [
+        'username' => [
+            'max_length' => 'Username maksimal 75 karakter.',
+            'is_unique'  => 'Username sudah dipakai.',
+        ],
+        'password' => [
+            'required'   => 'Password wajib diisi.',
+            'min_length' => 'Password minimal 6 karakter.',
+        ],
+        'login_type' => [
+            'required'  => 'Login type wajib diisi.',
+            'in_list'   => 'Login type harus backoffice atau mahasiswa.',
+        ],
+        'role' => [
+            'required' => 'Role wajib diisi.',
+            'in_list'  => 'Role harus Admin, Penjual, atau Pembeli.',
+        ],
+    ];
 
     /**
-     * Cari user berdasarkan NPM.
-     *
-     * @param string $npm 9-digit NPM
-     * @return array|null
+     * Ambil user backoffice berdasarkan username.
+     * Dipakai oleh halaman login backoffice.
+     */
+    public function findByUsername(string $username): ?array
+    {
+        $row = $this->where('username', $username)
+                    ->where('login_type', 'backoffice')
+                    ->first();
+
+        return $row ?? null;
+    }
+
+    /**
+     * Ambil user mahasiswa berdasarkan NPM (9 digit).
+     * Akan dipakai oleh halaman login client side (nanti).
      */
     public function findByNpm(string $npm): ?array
     {
-        return $this->where('npm', $npm)->first();
+        $row = $this->where('npm', $npm)
+                    ->where('login_type', 'mahasiswa')
+                    ->first();
+
+        return $row ?? null;
     }
 }
