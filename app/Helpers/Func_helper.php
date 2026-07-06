@@ -13,6 +13,13 @@ if (!function_exists('formatRupiah')) {
     }
 }
 
+if (!function_exists('format_rupiah')) {
+    function format_rupiah(float|int $amount): string
+    {
+        return 'Rp ' . number_format($amount, 0, ',', '.');
+    }
+}
+
 if (!function_exists('writelog')) {
     /**
      * Write activity log to database sesuai instruksi tim
