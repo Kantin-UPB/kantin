@@ -64,10 +64,11 @@
     </div>
     <div class="offcanvas-body">
         <nav class="nav flex-column">
-            <a class="nav-link active" href="/"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
-            <a class="nav-link" href="/data"><i class="bi bi-database me-2"></i>Data</a>
-            <a class="nav-link" href="/transaction"><i class="bi bi-cart3 me-2"></i>Transaction</a>
-            <a class="nav-link" href="/report"><i class="bi bi-file-earmark-bar-graph me-2"></i>Report</a>
+            <a class="nav-link active" href="<?= site_url('/') ?>"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+            <a class="nav-link" href="<?= site_url('/menu') ?>"><i class="bi bi-journal-text me-2"></i>Menu</a>
+            <a class="nav-link" href="<?= site_url('/data') ?>"><i class="bi bi-database me-2"></i>Data</a>
+            <a class="nav-link" href="<?= site_url('/transaction') ?>"><i class="bi bi-cart3 me-2"></i>Transaction</a>
+            <a class="nav-link" href="<?= site_url('/report') ?>"><i class="bi bi-file-earmark-bar-graph me-2"></i>Report</a>
             <hr>
             <a class="nav-link text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
         </nav>
@@ -81,16 +82,19 @@
         <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse show">
             <div class="position-sticky pt-3">
                 <nav class="nav flex-column">
-                    <a class="nav-link active" href="/">
+                    <a class="nav-link active" href="<?= site_url('/') ?>">
                         <i class="bi bi-speedometer2 me-2"></i>Dashboard
                     </a>
-                    <a class="nav-link" href="/data">
+                    <a class="nav-link" href="<?= site_url('/menu') ?>">
+                        <i class="bi bi-journal-text me-2"></i>Menu
+                    </a>
+                    <a class="nav-link" href="<?= site_url('/data') ?>">
                         <i class="bi bi-database me-2"></i>Data
                     </a>
-                    <a class="nav-link" href="/transaction">
+                    <a class="nav-link" href="<?= site_url('/transaction') ?>">
                         <i class="bi bi-cart3 me-2"></i>Transaction
                     </a>
-                    <a class="nav-link" href="/report">
+                    <a class="nav-link" href="<?= site_url('/report') ?>">
                         <i class="bi bi-file-earmark-bar-graph me-2"></i>Report
                     </a>
                     <hr>

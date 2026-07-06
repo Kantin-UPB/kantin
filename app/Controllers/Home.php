@@ -6,6 +6,9 @@ class Home extends BaseController
 {
     public function index()
     {
+        // 1. Panggil dulu file helpernya agar fungsi writelog() dikenali
+        helper('Func_helper');
+
         $data = [
             'title'    => 'Dashboard',
             'username' => session()->get('username'),
