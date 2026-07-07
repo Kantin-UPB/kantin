@@ -88,6 +88,9 @@
                     <a class="nav-link" href="<?= site_url('/menu') ?>">
                         <i class="bi bi-journal-text me-2"></i>Menu
                     </a>
+                    <a class="nav-link" href="<?= site_url('/meja') ?>">
+                        <i class="bi bi-ui-checks-grid"></i> Meja
+                    </a>                  
                     <a class="nav-link" href="<?= site_url('/data') ?>">
                         <i class="bi bi-database me-2"></i>Data
                     </a>

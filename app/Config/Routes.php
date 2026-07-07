@@ -21,6 +21,8 @@ $routes->get('/menu/cancel/(:num)', 'Menu::cancel/$1', ['filter' => 'auth']);
 $routes->get('/menu/delete/(:num)', 'Menu::delete/$1', ['filter' => 'auth']);
 $routes->get('/menu/draft/(:num)', 'Menu::draft/$1', ['filter' => 'auth']);
 
+$routes->get('/meja', 'Meja::index', ['filter' => 'auth']);
+$routes->post('/meja/update', 'Meja::updateStatus', ['filter' => 'auth']);
 // Auth routes (public - tidak butuh login)
 $routes->get('/login', 'Auth::login');
 $routes->post('/login', 'Auth::loginProcess');
