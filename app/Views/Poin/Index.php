@@ -1,11 +1,9 @@
 <?php
 // Lokasi file ini di project: app/Views/Poin/Index.php
-// CATATAN: sesuaikan extend layout dengan yang dipakai halaman lain di project ini
-// (cek app/Views/Home.php atau app/Views/SamplePage.php sebagai contoh pola layout).
+// Ini fragmen HTML biasa (BUKAN extend/section) — dipanggil lewat
+// ManagePoin::renderPage(), disambung setelah Layout/Header + Layout/Menu,
+// dan sebelum Layout/Footer. Persis pola app/Controllers/Menu.php.
 ?>
-<?= $this->extend('Layout/Menu') ?>
-
-<?= $this->section('content') ?>
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -70,5 +68,3 @@
         </a>
     </div>
 </div>
-
-<?= $this->endSection() ?>

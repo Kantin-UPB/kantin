@@ -1,9 +1,7 @@
 <?php
 // Lokasi file ini di project: app/Views/Poin/Riwayat.php
+// Fragmen HTML biasa, dipanggil lewat ManagePoin::renderPage() (pola sama seperti Menu.php).
 ?>
-<?= $this->extend('Layout/Menu') ?>
-
-<?= $this->section('content') ?>
 
 <div class="container-fluid py-4">
     <h4 class="mb-3">Riwayat Poin</h4>
@@ -47,5 +45,3 @@
         </div>
     </div>
 </div>
-
-<?= $this->endSection() ?>

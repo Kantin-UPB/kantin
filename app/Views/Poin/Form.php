@@ -1,10 +1,8 @@
 <?php
 // Lokasi file ini di project: app/Views/Poin/Form.php
+// Fragmen HTML biasa, dipanggil lewat ManagePoin::renderPage() (pola sama seperti Menu.php).
 $isEdit = ! empty($aturan);
 ?>
-<?= $this->extend('Layout/Menu') ?>
-
-<?= $this->section('content') ?>
 
 <div class="container-fluid py-4">
     <h4 class="mb-3"><?= $isEdit ? 'Edit' : 'Tambah' ?> Aturan Poin</h4>
@@ -62,5 +60,3 @@ $isEdit = ! empty($aturan);
         </div>
     </div>
 </div>
-
-<?= $this->endSection() ?>

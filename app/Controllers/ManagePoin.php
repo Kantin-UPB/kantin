@@ -25,6 +25,18 @@ class ManagePoin extends BaseController
     }
 
     /**
+     * Susun halaman persis pola project ini: Header + Menu (sidebar) + konten + Footer.
+     * Lihat contoh yang sama di app/Controllers/Menu.php.
+     */
+    private function renderPage(string $view, array $data): string
+    {
+        return view('Layout/Header', ['title' => $data['title'] ?? 'Manage Sistem Poin'])
+            . view('Layout/Menu')
+            . view($view, $data)
+            . view('Layout/Footer');
+    }
+
+    /**
      * Halaman utama: daftar aturan poin yang sudah dibuat.
      */
     public function index()
@@ -34,7 +46,7 @@ class ManagePoin extends BaseController
             'aturan' => $this->poinModel->orderBy('id', 'DESC')->findAll(),
         ];
 
-        return view('Poin/Index', $data);
+        return $this->renderPage('Poin/Index', $data);
     }
 
     /**
@@ -42,7 +54,7 @@ class ManagePoin extends BaseController
      */
     public function create()
     {
-        return view('Poin/Form', [
+        return $this->renderPage('Poin/Form', [
             'title'  => 'Tambah Aturan Poin',
             'aturan' => null,
         ]);
@@ -84,7 +96,7 @@ class ManagePoin extends BaseController
             return redirect()->to('/manage-poin')->with('error', 'Aturan poin tidak ditemukan.');
         }
 
-        return view('Poin/Form', [
+        return $this->renderPage('Poin/Form', [
             'title'  => 'Edit Aturan Poin',
             'aturan' => $aturan,
         ]);
@@ -135,6 +147,6 @@ class ManagePoin extends BaseController
             'riwayat' => $this->riwayatModel->orderBy('created_at', 'DESC')->findAll(),
         ];
 
-        return view('Poin/Riwayat', $data);
+        return $this->renderPage('Poin/Riwayat', $data);
     }
 }
