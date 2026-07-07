@@ -60,6 +60,23 @@ class Session extends BaseConfig
      */
     public string $savePath = WRITEPATH . 'session';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'kantin_sessions';
+
+        if (! is_dir($tempPath) && ! @mkdir($tempPath, 0777, true) && ! is_dir($tempPath)) {
+            $tempPath = WRITEPATH . 'session';
+        }
+
+        if (! is_dir($tempPath)) {
+            @mkdir($tempPath, 0777, true);
+        }
+
+        $this->savePath = $tempPath;
+    }
+
     /**
      * --------------------------------------------------------------------------
      * Session Match IP

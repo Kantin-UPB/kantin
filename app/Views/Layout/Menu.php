@@ -2,12 +2,26 @@
     .sidebar {
         min-height: calc(100vh - 56px);
         border-right: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        padding-top: 1rem;
+        z-index: 2;
     }
     .sidebar .nav-link {
         color: #333;
         padding: 0.75rem 1rem;
         border-radius: 0.25rem;
         margin-bottom: 0.25rem;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link:focus {
+        background-color: #e9ecef;
+        color: #000;
+        outline: none;
     }
     .sidebar .nav-link:hover {
         background-color: #e9ecef;
@@ -17,10 +31,32 @@
         background-color: #0d6efd;
         color: #fff;
     }
+    .sidebar .nav-link {
+        position: relative;
+        z-index: 1;
+        display: block;
+        width: 100%;
+        text-decoration: none;
+    }
     main {
         padding-top: 1.5rem;
     }
 </style>
+
+<?php
+$uri = service('request')->getUri();
+$currentPath = '/' . trim($uri->getPath(), '/');
+$currentPath = preg_replace('#^/index\.php#', '', $currentPath);
+$currentPath = $currentPath === '' ? '/' : $currentPath;
+
+$matches = static function (string $path) use ($currentPath): bool {
+    if ($path === '/') {
+        return $currentPath === '/';
+    }
+
+    return $currentPath === $path || str_starts_with($currentPath, $path . '/');
+};
+?>
 
 <!-- Top Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
@@ -64,13 +100,14 @@
     </div>
     <div class="offcanvas-body">
         <nav class="nav flex-column">
-            <a class="nav-link active" href="<?= site_url('/') ?>"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
-            <a class="nav-link" href="<?= site_url('/menu') ?>"><i class="bi bi-journal-text me-2"></i>Menu</a>
-            <a class="nav-link" href="<?= site_url('/data') ?>"><i class="bi bi-database me-2"></i>Data</a>
-            <a class="nav-link" href="<?= site_url('/transaction') ?>"><i class="bi bi-cart3 me-2"></i>Transaction</a>
-            <a class="nav-link" href="<?= site_url('/report') ?>"><i class="bi bi-file-earmark-bar-graph me-2"></i>Report</a>
+            <a class="nav-link <?= $matches('/') ? 'active' : '' ?>" href="<?= site_url('/') ?>" data-nav="dashboard"><i class="bi bi-speedometer2 me-2"></i><span>Dashboard</span></a>
+            <a class="nav-link <?= $matches('/menu') ? 'active' : '' ?>" href="<?= site_url('/menu') ?>" data-nav="menu"><i class="bi bi-journal-text me-2"></i><span>Menu</span></a>
+            <a class="nav-link <?= $matches('/kategori') ? 'active' : '' ?>" href="<?= site_url('/kategori') ?>" data-nav="kategori"><i class="bi bi-tags me-2"></i><span>Kategori</span></a>
+            <a class="nav-link <?= $matches('/data') ? 'active' : '' ?>" href="<?= site_url('/data') ?>" data-nav="data"><i class="bi bi-database me-2"></i><span>Data</span></a>
+            <a class="nav-link <?= $matches('/transaction') ? 'active' : '' ?>" href="<?= site_url('/transaction') ?>" data-nav="transaction"><i class="bi bi-cart3 me-2"></i><span>Transaction</span></a>
+            <a class="nav-link <?= $matches('/report') ? 'active' : '' ?>" href="<?= site_url('/report') ?>" data-nav="report"><i class="bi bi-file-earmark-bar-graph me-2"></i><span>Report</span></a>
             <hr>
-            <a class="nav-link text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+            <a class="nav-link text-danger" href="<?= site_url('/logout') ?>" data-nav="logout"><i class="bi bi-box-arrow-right me-2"></i><span>Logout</span></a>
         </nav>
     </div>
 </div>
@@ -82,24 +119,27 @@
         <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse show">
             <div class="position-sticky pt-3">
                 <nav class="nav flex-column">
-                    <a class="nav-link active" href="<?= site_url('/') ?>">
-                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    <a class="nav-link <?= $matches('/') ? 'active' : '' ?>" href="<?= site_url('/') ?>" data-nav="dashboard">
+                        <i class="bi bi-speedometer2 me-2"></i><span>Dashboard</span>
                     </a>
-                    <a class="nav-link" href="<?= site_url('/menu') ?>">
-                        <i class="bi bi-journal-text me-2"></i>Menu
+                    <a class="nav-link <?= $matches('/menu') ? 'active' : '' ?>" href="<?= site_url('/menu') ?>" data-nav="menu">
+                        <i class="bi bi-journal-text me-2"></i><span>Menu</span>
                     </a>
-                    <a class="nav-link" href="<?= site_url('/data') ?>">
-                        <i class="bi bi-database me-2"></i>Data
+                    <a class="nav-link <?= $matches('/kategori') ? 'active' : '' ?>" href="<?= site_url('/kategori') ?>" data-nav="kategori">
+                        <i class="bi bi-tags me-2"></i><span>Kategori</span>
                     </a>
-                    <a class="nav-link" href="<?= site_url('/transaction') ?>">
-                        <i class="bi bi-cart3 me-2"></i>Transaction
+                    <a class="nav-link <?= $matches('/data') ? 'active' : '' ?>" href="<?= site_url('/data') ?>" data-nav="data">
+                        <i class="bi bi-database me-2"></i><span>Data</span>
                     </a>
-                    <a class="nav-link" href="<?= site_url('/report') ?>">
-                        <i class="bi bi-file-earmark-bar-graph me-2"></i>Report
+                    <a class="nav-link <?= $matches('/transaction') ? 'active' : '' ?>" href="<?= site_url('/transaction') ?>" data-nav="transaction">
+                        <i class="bi bi-cart3 me-2"></i><span>Transaction</span>
+                    </a>
+                    <a class="nav-link <?= $matches('/report') ? 'active' : '' ?>" href="<?= site_url('/report') ?>" data-nav="report">
+                        <i class="bi bi-file-earmark-bar-graph me-2"></i><span>Report</span>
                     </a>
                     <hr>
-                    <a class="nav-link text-danger" href="/logout">
-                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                    <a class="nav-link text-danger" href="<?= site_url('/logout') ?>" data-nav="logout">
+                        <i class="bi bi-box-arrow-right me-2"></i><span>Logout</span>
                     </a>
                 </nav>
             </div>
