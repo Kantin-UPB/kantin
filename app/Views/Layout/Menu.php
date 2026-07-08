@@ -125,6 +125,9 @@ $matches = static function (string $path) use ($currentPath): bool {
                     <a class="nav-link <?= $matches('/menu') ? 'active' : '' ?>" href="<?= site_url('/menu') ?>" data-nav="menu">
                         <i class="bi bi-journal-text me-2"></i><span>Menu</span>
                     </a>
+                     <a class="nav-link" href="<?= site_url('/meja') ?>">
+                        <i class="bi bi-ui-checks-grid"></i> Meja
+                    </a>  
                     <a class="nav-link <?= $matches('/kategori') ? 'active' : '' ?>" href="<?= site_url('/kategori') ?>" data-nav="kategori">
                         <i class="bi bi-tags me-2"></i><span>Kategori</span>
                     </a>
