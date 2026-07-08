@@ -165,13 +165,11 @@ Perbaikan bug navigasi pada dashboard menu, bukan fitur baru. Sebelumnya, saat m
 2. Ditambahkan helper redirectToReturnOrDefault() di controller agar semua aksi konsisten redirect ke halaman asal.
 3. Ditambahkan fitur Restore (route + function baru) untuk mengembalikan menu dari Cancelled ke Pending.
 4. Duplikat fungsi activate() dihapus, menghilangkan fatal error.
-
 **New Routes**
 
 | Method | URL | Controller | Fungsi |
 |:------:|-----|------------|--------|
-| `GET`	 | /menu/restore/(:num) | Menu::restore | Pulihkan menu dari Cancelled -> Pending |
-
+| `GET`	 | /menu/restore/(:num) | Menu::restore | Pulihkan menu dari Cancelled → Pending |
 **New Function** <p>
 
 Function baru/berubah di Menu.php
@@ -180,5 +178,3 @@ defaultPath`.
 - `restore($id)` (baru, public) - set status menu kembali ke Pending, khusus dari menu Cancelled.
 - `activate()`, `cancel()`, `draft()`, `delete()` (diperbarui) - sekarang semua redirect memakai redirectToReturnOrDefault(), bukan redirect hardcode seperti sebelumnya.
 - Duplikat method `activate()` yang menyebabkan fatal error Cannot redeclare Menu::activate() sudah dihapus.
-
-
