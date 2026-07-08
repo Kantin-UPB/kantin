@@ -141,10 +141,12 @@ Perbaikan : <p>
 2. Ditambahkan helper redirectToReturnOrDefault() di controller agar semua aksi konsisten redirect ke halaman asal.
 3. Ditambahkan fitur Restore (route + function baru) untuk mengembalikan menu dari Cancelled ke Pending.
 4. Duplikat fungsi activate() dihapus, menghilangkan fatal error.
+   
 **New Routes**
 | Method | URL | Controller | Fungsi |
 |:------:|-----|------------|--------|
 | `GET`	 | /menu/restore/(:num) | Menu::restore | Pulihkan menu dari Cancelled → Pending |
+
 **New Function** <p>
 Function baru/berubah di Menu.php
 - `redirectToReturnOrDefault(?string return, string $defaultPath)` (baru, private) — helper redirect terpusat; kalau ada parameter `return` dari URL, redirect ke situ, kalau tidak pakai `
