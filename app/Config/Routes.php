@@ -25,6 +25,8 @@ $routes->get('/menu/activate/(:num)', 'Menu::activate/$1', ['filter' => 'auth'])
 $routes->get('/menu/cancel/(:num)', 'Menu::cancel/$1', ['filter' => 'auth']);
 $routes->get('/menu/delete/(:num)', 'Menu::delete/$1', ['filter' => 'auth']);
 $routes->get('/menu/draft/(:num)', 'Menu::draft/$1', ['filter' => 'auth']);
+$routes->get('/menu/restore/(:num)', 'Menu::restore/$1', ['filter' => 'auth']);
+
 
 // Auth routes (public - tidak butuh login)
 $routes->get('/login', 'Auth::login');
