@@ -160,7 +160,7 @@ class Menu extends BaseController
         $data = $this->prepareMenuData($postData);
 
         if ($this->menuModel->insert($data)) {
-            return redirect()->to('/menu')->with('success', 'Menu berhasil ditambahkan dan disimpan sebagai Pending.');
+            return redirect()->to('/menu/pending')->with('success', 'Menu berhasil ditambahkan dan disimpan sebagai Pending.');
         }
 
         return redirect()->back()->withInput()->with('errors', $this->menuModel->errors());

@@ -53,7 +53,16 @@ class Kategori extends BaseController
         }
 
         if ($this->kategoriModel->insert($postData)) {
-            return redirect()->to('/kategori')->with('success', 'Kategori berhasil ditambahkan.');
+            $return = $this->request->getGet('return');
+            $return = $return ? trim($return) : '';
+
+            // Allowed return paths (fallback to /menu/create)
+            $allowed = ['/menu/create', '/menu', '/menu/pending', '/menu/cancelled', '/kategori'];
+            if ($return && in_array($return, $allowed, true)) {
+                return redirect()->to($return)->with('success', 'Kategori berhasil ditambahkan.');
+            }
+
+            return redirect()->to('/menu/create')->with('success', 'Kategori berhasil ditambahkan.');
         }
 
         return redirect()->back()->withInput()->with('errors', $this->kategoriModel->errors());
