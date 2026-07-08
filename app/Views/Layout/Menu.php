@@ -102,6 +102,7 @@ $matches = static function (string $path) use ($currentPath): bool {
         <nav class="nav flex-column">
             <a class="nav-link <?= $matches('/') ? 'active' : '' ?>" href="<?= site_url('/') ?>" data-nav="dashboard"><i class="bi bi-speedometer2 me-2"></i><span>Dashboard</span></a>
             <a class="nav-link <?= $matches('/menu') ? 'active' : '' ?>" href="<?= site_url('/menu') ?>" data-nav="menu"><i class="bi bi-journal-text me-2"></i><span>Menu</span></a>
+            <a class="nav-link <?= $matches('/meja') ? 'active' : '' ?>" href="<?= site_url('/meja') ?>" data-nav="meja"><i class="bi bi-ui-checks-grid me-2"></i><span>Meja</span></a>
             <a class="nav-link <?= $matches('/kategori') ? 'active' : '' ?>" href="<?= site_url('/kategori') ?>" data-nav="kategori"><i class="bi bi-tags me-2"></i><span>Kategori</span></a>
             <a class="nav-link <?= $matches('/data') ? 'active' : '' ?>" href="<?= site_url('/data') ?>" data-nav="data"><i class="bi bi-database me-2"></i><span>Data</span></a>
             <a class="nav-link <?= $matches('/transaction') ? 'active' : '' ?>" href="<?= site_url('/transaction') ?>" data-nav="transaction"><i class="bi bi-cart3 me-2"></i><span>Transaction</span></a>
@@ -125,12 +126,12 @@ $matches = static function (string $path) use ($currentPath): bool {
                     <a class="nav-link <?= $matches('/menu') ? 'active' : '' ?>" href="<?= site_url('/menu') ?>" data-nav="menu">
                         <i class="bi bi-journal-text me-2"></i><span>Menu</span>
                     </a>
+                    <a class="nav-link <?= $matches('/meja') ? 'active' : '' ?>" href="<?= site_url('/meja') ?>" data-nav="meja">
+                        <i class="bi bi-ui-checks-grid me-2"></i><span>Meja</span>
+                    </a>  
                     <a class="nav-link <?= $matches('/kategori') ? 'active' : '' ?>" href="<?= site_url('/kategori') ?>" data-nav="kategori">
                         <i class="bi bi-tags me-2"></i><span>Kategori</span>
                     </a>
-                    <a class="nav-link" href="<?= site_url('/meja') ?>">
-                        <i class="bi bi-ui-checks-grid"></i> Meja
-                    </a>                  
                     <a class="nav-link <?= $matches('/data') ? 'active' : '' ?>" href="<?= site_url('/data') ?>" data-nav="data">
                         <i class="bi bi-database me-2"></i><span>Data</span>
                     </a>
