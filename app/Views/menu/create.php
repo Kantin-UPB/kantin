@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (categorySelect) {
         categorySelect.addEventListener('change', function () {
             if (this.value === '__add_category__') {
-                window.location.href = '<?= site_url('kategori') ?>';
+                window.location.href = '<?= site_url('kategori/create') ?>' + '?return=' + encodeURIComponent('<?= '/menu/create' ?>');
             }
         });
     }
@@ -85,3 +85,4 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+

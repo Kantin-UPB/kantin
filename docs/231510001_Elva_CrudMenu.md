@@ -6,18 +6,20 @@
 ---
 
 **NEW UPDATES** 
-| Date | Whats New |
-|------|-----------|
-| 08/07/26 | Perbaikan Navigasi Menu: Return-to-Origin Redirect & Restore Feature |
+| No. Rev | Date | Whats New |
+|:-------:|------|-----------|
+|2        | 08/07/26 | Perbaikan return-path tambah kategori dari menu create & redirect menu baru ke pending |
+|1        | 08/07/26 | Perbaikan Navigasi Menu: Return-to-Origin Redirect & Restore Feature |
 
 ---
 
 ## A. Apa aja yang dikerjakan
-1. Manajemen Menu — membuat sistem tambah, lihat, edit, dan hapus menu makanan, termasuk upload gambar menu ke server.
-2. Status Menu — menerapkan alur status menu (Pending → Active/Cancel → Delete), sehingga menu baru otomatis masuk status "Pending" sebelum diaktifkan, dan hanya menu berstatus "Cancel" yang bisa dihapus permanen.
-3. Validasi Input — menambahkan validasi untuk nama, deskripsi, harga, dan kategori menu agar data yang masuk konsisten.
-4. Perbaikan Navigasi — menambahkan menu "Menu" di sidebar dan memperbaiki seluruh link agar konsisten memakai `site_url()`.
-5. Database — membuat migration baru untuk tabel menu, termasuk relasi foreign key antar keduanya.
+
+1. Manajemen Menu - membuat sistem tambah, lihat, edit, dan hapus menu makanan, termasuk upload gambar menu ke server.
+2. Status Menu - menerapkan alur status menu (Pending â†’ Active/Cancel â†’ Delete), sehingga menu baru otomatis masuk status "Pending" sebelum diaktifkan, dan hanya menu berstatus "Cancel" yang bisa dihapus permanen.
+3. Validasi Input - menambahkan validasi untuk nama, deskripsi, harga, dan kategori menu agar data yang masuk konsisten.
+4. Perbaikan Navigasi - menambahkan menu "Menu" di sidebar dan memperbaiki seluruh link agar konsisten memakai `site_url()`.
+5. Database - membuat migration baru untuk tabel menu, termasuk relasi foreign key antar keduanya.
 
 ## B. Tabel Menu
 
@@ -57,7 +59,7 @@ Setting untuk Foreign Key `id_kategori` <p>
 
 ## D. Functions
 
-### D.I. Menu.php — Controller
+### D.I. Menu.php - Controller
 
 | Fungsi | Keterangan |
 |--------|------------|
@@ -70,6 +72,7 @@ Setting untuk Foreign Key `id_kategori` <p>
 | `activate($id)`, `cancel($id)`, `draft($id)` | ubah status menu |
 | `delete($id)` | hapus menu permanen (khusus status Cancel) |
 | `repareMenuData()` / `prepareUpdateData()` | siapkan data & upload gambar |
+
 ### D.II. MenuModel.php
 
 | Fungsi | Keterangan |
@@ -78,18 +81,21 @@ Setting untuk Foreign Key `id_kategori` <p>
 | `getMenuById($id)` | ambil 1 menu |
 | `getCategories()` | ambil daftar kategori |
 | `getStatusOptions()` | mapping status |
-| `getValidationRules()` | getValidationMessages() — aturan validasi menu |
+| `getValidationRules()` | getValidationMessages() - aturan validasi menu |
 
 ## E. Diagram of CRUD Menu
 
 ```mermaid
 graph LR
   1[Login] --> 2[Dashboard]
+  
   2 --> 3[menu]
+  
   3 --> 4[Add Menu]
   3 --> 5[Pending Menus]
   3 --> 6[Cancelled Menus]
   3 --> 7[Existing Menus' Profile]
+  
   4 --> 8[Simpan]
   4 --> 9[Batal]
   5 --> 10[Detail]
@@ -104,51 +110,75 @@ graph LR
   7 --> 11
   7 --> 16[Set to Draft]
   7 --> 13
-  8 --> 17[Menu Berhasil ditambahkan ke Daftar Pending Menus]
+  
+  8 --> 17[Menu Berhasil ditambahkan]
   9 --> 18[Menu tidak di simpan] 
   10 --> 11
   10 --> 19[Kembali]  
   11 --> 20[Update]
   11 --> 21[Batal]
-  12 --> 22[Menu Berhasil diaktifkan ke Daftar Menu Aktif / Active Menus]
-  13 --> 23[Menu Dicancel, Dipindahkan ke Cancelled Menus]
-  14 --> 24[Menu diRestore / dipulihkan, Dipindahkan ke Pending Menus]
+  12 --> 22[Menu Berhasil diaktifkan]
+  13 --> 23[Menu Dicancel]
+  14 --> 24[Menu Dipulihkan]
   15 --> 25[Menu Dihapus]
-  16 --> 26[Menu dipindahkan ke drafts / Pending Menus]
+  16 --> 26[Menu Dipending-kan]
+  
   17 --> 2
   18 --> 2
   19 --> 2
   20 --> 27[Menu Berhasil diupdate]
-  21 --> 28[Menu Tidak Berubah, Edit tidak disimpan]
+  21 --> 28[Menu Tidak Berubah]
   22 --> 2
   23 --> 2
   24 --> 2
   25 --> 2
   26 --> 2
+  
   27 --> 2
   28 --> 2
 ``` 
+
 ---
 
 ## UPDATES
 
-### 8 July 2026
+### Rev 2 - 8 July 2026
 
-**Update :** <p>
-perbaikan bug navigasi pada dashboard menu, bukan fitur baru. Sebelumnya, saat melakukan aksi (Activate/Cancel/Draft/Delete) dari salah satu tab dashboard (Active/Pending/Cancelled), user kadang dilempar ke tab yang salah karena logic from/redirect tidak konsisten — ditambah ada fatal error karena function activate() terduplikasi. 
-Perbaikan : <p>
+Perbaikan alur setelah tambah menu baru: sebelumnya setelah store() sukses, user diarahkan ke halaman Active Menu (/menu), padahal menu baru statusnya Pending sehingga tidak langsung terlihat di situ. Sekarang redirect diarahkan langsung ke /menu/pending, sesuai status default menu baru. <p>
+Selain itu, form menu/create.php disesuaikan supaya saat user klik "+ Tambah Kategori", ia dinavigasikan ke /kategori/create untuk tambah kategori, ketika user klik simpan, user kembali ke /menu/create dengan list Kategori yang sudah terupdate dengan Kategori yang baru di tambahkan tadi.
+
+**New Function** <p>
+
+Function baru/berubah di Menu.php
+- `store():RedirectResponse` Redirect setelah sukses simpan diubah dari redirect()->to('/menu') menjadi redirect()->to('/menu/pending'), supaya user langsung diarahkan ke daftar Pending Menus (karena menu baru memang selalu masuk status Pending). <p>
+
+<p>
+
+Perubahan di View Menu <p>
+- `app/Views/menu/create.php` Link dropdown "+ Tambah Kategori" diubah agar membawa parameter ?return=/menu/create, supaya setelah kategori baru disimpan, user dikembalikan ke form Tambah Menu (bukan malah ke halaman kategori).
+
+
+### Rev 1 - 8 July 2026
+
+Perbaikan bug navigasi pada dashboard menu, bukan fitur baru. Sebelumnya, saat melakukan aksi (Activate/Cancel/Draft/Delete) dari salah satu tab dashboard (Active/Pending/Cancelled), user kadang dilempar ke tab yang salah karena logic from/redirect tidak konsisten - ditambah ada fatal error karena function activate() terduplikasi. Perbaikan : <p>
 1. Setiap link aksi di menu/index.php sekarang membawa parameter ?return=... supaya sistem tahu persis halaman asal.
 2. Ditambahkan helper redirectToReturnOrDefault() di controller agar semua aksi konsisten redirect ke halaman asal.
 3. Ditambahkan fitur Restore (route + function baru) untuk mengembalikan menu dari Cancelled ke Pending.
 4. Duplikat fungsi activate() dihapus, menghilangkan fatal error.
+
 **New Routes**
+
 | Method | URL | Controller | Fungsi |
 |:------:|-----|------------|--------|
-| `GET`	 | /menu/restore/(:num) | Menu::restore | Pulihkan menu dari Cancelled → Pending |
+| `GET`	 | /menu/restore/(:num) | Menu::restore | Pulihkan menu dari Cancelled -> Pending |
+
 **New Function** <p>
+
 Function baru/berubah di Menu.php
-- `redirectToReturnOrDefault(?string return, string $defaultPath)` (baru, private) — helper redirect terpusat; kalau ada parameter `return` dari URL, redirect ke situ, kalau tidak pakai `
+- `redirectToReturnOrDefault(?string return, string $defaultPath)` (baru, private) - helper redirect terpusat; kalau ada parameter `return` dari URL, redirect ke situ, kalau tidak pakai `
 defaultPath`.
-- `restore($id)` (baru, public) — set status menu kembali ke Pending, khusus dari menu Cancelled.
-- `activate()`, `cancel()`, `draft()`, `delete()` (diperbarui) — sekarang semua redirect memakai redirectToReturnOrDefault(), bukan redirect hardcode seperti sebelumnya.
+- `restore($id)` (baru, public) - set status menu kembali ke Pending, khusus dari menu Cancelled.
+- `activate()`, `cancel()`, `draft()`, `delete()` (diperbarui) - sekarang semua redirect memakai redirectToReturnOrDefault(), bukan redirect hardcode seperti sebelumnya.
 - Duplikat method `activate()` yang menyebabkan fatal error Cannot redeclare Menu::activate() sudah dihapus.
+
+
