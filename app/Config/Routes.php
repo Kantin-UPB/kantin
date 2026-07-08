@@ -6,6 +6,7 @@ use CodeIgniter\Router\RouteCollection;
 
 // Protected routes - butuh login backoffice
 $routes->get('/', 'Home::index', ['filter' => 'auth']);
+$routes->get('pesan', 'Pesan::index');
 $routes->get('/sample', 'Home::Sample', ['filter' => 'auth']);
 $routes->get('/kategori', 'Kategori::index', ['filter' => 'auth']);
 $routes->get('/kategori/create', 'Kategori::create', ['filter' => 'auth']);
