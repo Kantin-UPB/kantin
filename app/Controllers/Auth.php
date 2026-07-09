@@ -28,7 +28,7 @@ class Auth extends BaseController
     {
         // Jika sudah login, arahkan ke dashboard
         if (session()->get('isLoggedIn')) {
-            return redirect()->to('/');
+            return redirect()->to('/admin');
         }
 
         $data = [
@@ -110,7 +110,7 @@ class Auth extends BaseController
             log_message('warning', 'Gagal menyimpan logsystem: ' . $e->getMessage());
         }
 
-        return redirect()->to('/')->with('success', 'Selamat datang, ' . $user['username'] . '!');
+        return redirect()->to('/admin')->with('success', 'Selamat datang, ' . $user['username'] . '!');
     }
 
     /**
@@ -139,7 +139,16 @@ class Auth extends BaseController
             }
         }
 
-        session()->destroy();
+        // Catatan: jangan pakai session()->destroy() karena flashdata
+        // yang di-set di redirect()->with() akan hilang juga. Cukup
+        // hapus key-key login supaya isLoggedIn=false, lalu regenerate
+        // session ID untuk keamanan (session fixation protection).
+        session()->remove('id');
+        session()->remove('username');
+        session()->remove('role');
+        session()->remove('login_type');
+        session()->remove('isLoggedIn');
+        session()->regenerate(true);
 
         return redirect()->to('/login')->with('success', 'Anda telah berhasil logout.');
     }

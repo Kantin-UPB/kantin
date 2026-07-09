@@ -62,7 +62,7 @@ $matches = static function (string $path) use ($currentPath): bool {
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <div class="container-fluid">
         <!-- Brand -->
-        <a class="navbar-brand" href="/">
+        <a class="navbar-brand" href="/admin">
             <i class="bi bi-clipboard-data me-2"></i>
             <?= env('app.name', 'Kantin') ?>
         </a>
@@ -100,7 +100,7 @@ $matches = static function (string $path) use ($currentPath): bool {
     </div>
     <div class="offcanvas-body">
         <nav class="nav flex-column">
-            <a class="nav-link <?= $matches('/') ? 'active' : '' ?>" href="<?= site_url('/') ?>" data-nav="dashboard"><i class="bi bi-speedometer2 me-2"></i><span>Dashboard</span></a>
+            <a class="nav-link <?= $matches('/admin') ? 'active' : '' ?>" href="<?= site_url('/admin') ?>" data-nav="dashboard"><i class="bi bi-speedometer2 me-2"></i><span>Dashboard</span></a>
             <a class="nav-link <?= $matches('/menu') ? 'active' : '' ?>" href="<?= site_url('/menu') ?>" data-nav="menu"><i class="bi bi-journal-text me-2"></i><span>Menu</span></a>
             <a class="nav-link <?= $matches('/kategori') ? 'active' : '' ?>" href="<?= site_url('/kategori') ?>" data-nav="kategori"><i class="bi bi-tags me-2"></i><span>Kategori</span></a>
             <a class="nav-link <?= $matches('/data') ? 'active' : '' ?>" href="<?= site_url('/data') ?>" data-nav="data"><i class="bi bi-database me-2"></i><span>Data</span></a>
@@ -119,7 +119,7 @@ $matches = static function (string $path) use ($currentPath): bool {
         <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse show">
             <div class="position-sticky pt-3">
                 <nav class="nav flex-column">
-                    <a class="nav-link <?= $matches('/') ? 'active' : '' ?>" href="<?= site_url('/') ?>" data-nav="dashboard">
+                    <a class="nav-link <?= $matches('/admin') ? 'active' : '' ?>" href="<?= site_url('/admin') ?>" data-nav="dashboard">
                         <i class="bi bi-speedometer2 me-2"></i><span>Dashboard</span>
                     </a>
                     <a class="nav-link <?= $matches('/menu') ? 'active' : '' ?>" href="<?= site_url('/menu') ?>" data-nav="menu">
