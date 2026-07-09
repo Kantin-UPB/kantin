@@ -18,5 +18,6 @@ class MejaSeeder extends Seeder
             ['id_meja' => 'B3', 'status' => 'kosong'],
             ['id_meja' => 'B4', 'status' => 'kosong'],
         ];
+             $this->db->table('meja')->insertBatch($data);
     }
 }
