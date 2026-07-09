@@ -9,13 +9,22 @@ use CodeIgniter\HTTP\ResponseInterface;
 class AuthFilter implements FilterInterface
 {
     /**
-     * Filter "before" - cek apakah user sudah login.
-     * Jika belum, redirect ke /login.
+     * Filter "before" - cek apakah user sudah login sebagai backoffice.
+     * Mahasiswa (login_type=mahasiswa) akan di-redirect ke /mahasiswa/login.
+     * Belum login sama sekali di-redirect ke /login (backoffice).
      */
     public function before(RequestInterface $request, $arguments = null)
     {
-        if (! session()->get('isLoggedIn')) {
+        $isLoggedIn = session()->get('isLoggedIn');
+        $loginType  = session()->get('login_type');
+
+        if (! $isLoggedIn) {
             return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu.');
+        }
+
+        // Mahasiswa tidak boleh akses halaman backoffice
+        if ($loginType === 'mahasiswa') {
+            return redirect()->to('/')->with('error', 'Akses backoffice hanya untuk Admin/Penjual.');
         }
     }
 
