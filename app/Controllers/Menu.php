@@ -85,15 +85,6 @@ class Menu extends BaseController
         return $data;
     }
 
-    private function getStatusLabel(int $statusId): string
-    {
-        return match ($statusId) {
-            5 => 'Active',
-            8 => 'Cancel',
-            default => 'Pending',
-        };
-    }
-
     private function getStatusLabelMap(): array
     {
         return [
@@ -169,7 +160,7 @@ class Menu extends BaseController
         $data = $this->prepareMenuData($postData);
 
         if ($this->menuModel->insert($data)) {
-            return redirect()->to('/menu')->with('success', 'Menu berhasil ditambahkan dan disimpan sebagai Pending.');
+            return redirect()->to('/menu/pending')->with('success', 'Menu berhasil ditambahkan dan disimpan sebagai Pending.');
         }
 
         return redirect()->back()->withInput()->with('errors', $this->menuModel->errors());
@@ -229,43 +220,77 @@ class Menu extends BaseController
         return redirect()->back()->withInput()->with('errors', $this->menuModel->errors());
     }
 
-    public function activate($id): RedirectResponse
+    private function redirectToReturnOrDefault(?string $return, string $defaultPath): RedirectResponse
     {
-        if ($this->menuModel->update($id, ['status_id' => 5])) {
-            return redirect()->to('/menu')->with('success', 'Menu berhasil diaktifkan.');
+        $return = $return ? trim($return) : '';
+
+
+        $allowed = ['/menu', '/menu/pending', '/menu/cancelled'];
+        if ($return && in_array($return, $allowed, true)) {
+            return redirect()->to($return);
         }
 
-        return redirect()->to('/menu')->with('error', 'Gagal mengaktifkan menu.');
+        return redirect()->to($defaultPath);
     }
 
     public function cancel($id): RedirectResponse
     {
+        $return = $this->request->getGet('return');
+
         if ($this->menuModel->update($id, ['status_id' => 8])) {
-            return redirect()->to('/menu')->with('success', 'Menu berhasil dibatalkan.');
+            return $this->redirectToReturnOrDefault($return, '/menu/cancelled')->with('success', 'Menu berhasil dibatalkan.');
         }
 
-        return redirect()->to('/menu')->with('error', 'Gagal membatalkan menu.');
+        return $this->redirectToReturnOrDefault($return, '/menu/cancelled')->with('error', 'Gagal membatalkan menu.');
     }
 
     public function draft($id): RedirectResponse
     {
+        $return = $this->request->getGet('return');
+
         if ($this->menuModel->update($id, ['status_id' => 1])) {
-            return redirect()->to('/menu')->with('success', 'Menu dikembalikan ke Draft.');
+            // After setting to Draft, menu belongs to Pending list.
+            return $this->redirectToReturnOrDefault($return, '/menu/pending')->with('success', 'Menu dikembalikan ke Draft.');
         }
 
-        return redirect()->to('/menu')->with('error', 'Gagal mengembalikan menu ke Draft.');
+        return $this->redirectToReturnOrDefault($return, '/menu/pending')->with('error', 'Gagal mengembalikan menu ke Draft.');
+    }
+
+    public function activate($id): RedirectResponse
+    {
+        $return = $this->request->getGet('return');
+
+        if ($this->menuModel->update($id, ['status_id' => 5])) {
+            return $this->redirectToReturnOrDefault($return, '/menu')->with('success', 'Menu berhasil diaktifkan.');
+        }
+
+        return $this->redirectToReturnOrDefault($return, '/menu')->with('error', 'Gagal mengaktifkan menu.');
+    }
+
+    public function restore($id): RedirectResponse
+    {
+        $return = $this->request->getGet('return');
+
+        if ($this->menuModel->update($id, ['status_id' => 1])) {
+            // After restore, menu belongs to Pending list.
+            return $this->redirectToReturnOrDefault($return, '/menu/pending')->with('success', 'Menu berhasil dipulihkan ke Pending.');
+        }
+
+        return $this->redirectToReturnOrDefault($return, '/menu/cancelled')->with('error', 'Gagal memulihkan menu.');
     }
 
     public function delete($id): RedirectResponse
     {
+        $return = $this->request->getGet('return');
+
         $menu = $this->menuModel->find($id);
 
         if (! $menu) {
-            return redirect()->to('/menu/cancelled')->with('error', 'Menu tidak ditemukan.');
+            return $this->redirectToReturnOrDefault($return, '/menu/cancelled')->with('error', 'Menu tidak ditemukan.');
         }
 
         if ((int) ($menu['status_id'] ?? 1) !== 8) {
-            return redirect()->to('/menu')->with('error', 'Hanya menu yang dibatalkan yang bisa dihapus.');
+            return $this->redirectToReturnOrDefault($return, '/menu')->with('error', 'Hanya menu yang dibatalkan yang bisa dihapus.');
         }
 
         if (! empty($menu['url_gambar'])) {
@@ -276,9 +301,10 @@ class Menu extends BaseController
         }
 
         if ($this->menuModel->delete($id)) {
-            return redirect()->to('/menu/cancelled')->with('success', 'Menu dibatalkan berhasil dihapus permanen.');
+            return $this->redirectToReturnOrDefault($return, '/menu/cancelled')->with('success', 'Menu dibatalkan berhasil dihapus permanen.');
         }
 
-        return redirect()->to('/menu/cancelled')->with('error', 'Gagal menghapus menu.');
+        return $this->redirectToReturnOrDefault($return, '/menu/cancelled')->with('error', 'Gagal menghapus menu.');
     }
 }
+

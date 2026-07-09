@@ -111,15 +111,17 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="<?= site_url('menu/' . $item['id']) ?>">Detail</a></li>
                                 <li><a class="dropdown-item" href="<?= site_url('menu/edit/' . $item['id']) ?>">Edit</a></li>
-                                <?php if ($statusPage === 'active'): ?>
-                                    <li><a class="dropdown-item" href="<?= site_url('menu/draft/' . $item['id']) ?>">Set to Draft</a></li>
-                                    <li><a class="dropdown-item text-danger" href="<?= site_url('menu/cancel/' . $item['id']) ?>">Cancel</a></li>
+<?php if ($statusPage === 'active'): ?>
+                                    <li><a class="dropdown-item" href="<?= site_url('menu/draft/' . $item['id'] . '?return=/menu') ?>">Set to Draft</a></li>
+                                    <li><a class="dropdown-item text-danger" href="<?= site_url('menu/cancel/' . $item['id'] . '?return=/menu') ?>">Cancel</a></li>
                                 <?php elseif ($statusPage === 'pending'): ?>
-                                    <li><a class="dropdown-item text-success" href="<?= site_url('menu/activate/' . $item['id']) ?>">Activate</a></li>
-                                    <li><a class="dropdown-item text-danger" href="<?= site_url('menu/cancel/' . $item['id']) ?>">Cancel</a></li>
+                                    <li><a class="dropdown-item text-success" href="<?= site_url('menu/activate/' . $item['id'] . '?return=/menu/pending') ?>">Activate</a></li>
+                                    <li><a class="dropdown-item text-danger" href="<?= site_url('menu/cancel/' . $item['id'] . '?return=/menu/pending') ?>">Cancel</a></li>
                                 <?php else: ?>
-                                    <li><a class="dropdown-item text-danger" href="<?= site_url('menu/delete/' . $item['id']) ?>">Hapus Permanen</a></li>
+                                    <li><a class="dropdown-item text-warning" href="<?= site_url('menu/restore/' . $item['id'] . '?return=/menu/cancelled') ?>">Restore</a></li>
+                                    <li><a class="dropdown-item text-danger" href="<?= site_url('menu/delete/' . $item['id'] . '?return=/menu/cancelled') ?>">Hapus Permanen</a></li>
                                 <?php endif; ?>
+
                             </ul>
                         </div>
                         <div class="text-center mt-3 menu-card-meta">

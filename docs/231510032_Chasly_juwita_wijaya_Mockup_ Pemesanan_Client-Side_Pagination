@@ -1,0 +1,180 @@
+## 1. Deskripsi Umum
+
+Commit ini menambahkan fitur **Halaman Pemesanan (Pesan)** pada sisi client aplikasi Kantin-UPB. Fitur dibangun menggunakan:
+
+- **CodeIgniter 4** — routing & controller
+- **Bootstrap 5** — UI/komponen (navbar, tab, modal, pagination, card)
+- **Vanilla JavaScript** — pengolahan data keranjang belanja dan logika pagination
+
+> Catatan dari commit message: data saat ini masih bersifat **dinamis di frontend** (disimpan dalam variabel JavaScript/`client-side state`), sehingga sudah siap untuk diintegrasikan dengan **database backend** pada tahap berikutnya.
+
+Fitur dapat diakses melalui rute **bypass** `/pesan` tanpa filter autentikasi (`auth`), berbeda dengan rute-rute lain yang memerlukan login backoffice.
+
+---
+
+## 2. Daftar File yang Diubah
+
+| File | Jenis Perubahan | Fungsi |
+|---|---|---|
+| `app/Config/Routes.php` | Modifikasi (+1 baris) | Menambahkan rute `pesan` |
+| `app/Controllers/pesan.php` | Baru (+16 baris) | Controller untuk render halaman pesan |
+| `app/Views/client/layout.php` | Baru (+43 baris) | Layout dasar untuk halaman client |
+| `app/Views/client/pesan.php` | Baru (+377 baris) | View utama: UI menu, keranjang, dan logika JS |
+
+---
+
+## 3. Detail Perubahan per File
+
+### 3.1 `app/Config/Routes.php`
+Menambahkan satu baris rute baru:
+
+```php
+$routes->get('pesan', 'Pesan::index');
+```
+
+- Rute ini **tidak** menggunakan `['filter' => 'auth']`, sehingga bisa diakses tanpa login (dimaksudkan sebagai halaman client/publik, berbeda dari rute admin/backoffice lain seperti `/`, `/kategori`, dll.).
+
+### 3.2 `app/Controllers/pesan.php`
+Controller baru bernama `Pesan` yang meng-extend `BaseController`:
+
+```php
+namespace App\Controllers;
+
+class Pesan extends BaseController
+{
+    public function index()
+    {
+        $data = [
+            'title' => 'Client Side - Halaman Pesan'
+        ];
+
+        // Memanggil view yang ada di folder app/Views/client/pesan.php
+        return view('client/pesan', $data);
+    }
+}
+```
+
+- Method `index()` mengirim variabel `title` ke view `client/pesan`.
+
+### 3.3 `app/Views/client/layout.php`
+Layout dasar (master template) untuk seluruh halaman client, berisi:
+
+- `<head>` dengan CDN **Bootstrap 5.3.3** dan **Bootstrap Icons 1.11.3**
+- **Navbar** dengan brand "Kantin Client" dan badge status **"Mode Preview Chasly"**
+- Slot konten utama menggunakan `renderSection('content')`
+- **Footer** dengan copyright "© 2026 Progres Kantin - Client Side"
+- Script bundle Bootstrap di akhir `<body>`
+
+### 3.4 `app/Views/client/pesan.php`
+View utama fitur pemesanan, meng-extend `client/layout`. Terdiri dari struktur UI dan logika JavaScript berikut.
+
+---
+
+## 4. Struktur Antarmuka (UI)
+
+### 4.1 Header Halaman
+- Judul **"🛒 Pemesanan"**
+- Keterangan: *"Bypass Route /pesan - Fitur Grid 6 Menu & Pagination Dinamis"*
+- Dua tombol aksi:
+  - **Tambah Menu Baru** → membuka modal `#modalTambahMenu`
+  - **Lihat Keranjang** → membuka modal `#modalKeranjang`, dilengkapi badge jumlah item (`#badge-keranjang`)
+
+### 4.2 Navigasi Kategori (Tabs)
+Menggunakan Bootstrap `nav-pills` dengan 3 kategori:
+- **Makanan** (`#makanan`, aktif secara default)
+- **Minuman** (`#minuman`)
+- **Dessert** (`#dessert`)
+
+Setiap tab memiliki grid produk (`grid-makanan`, `grid-minuman`, `grid-dessert`) dan kontainer pagination masing-masing (`pagination-makanan`, dst).
+
+### 4.3 Modal "Tambah Menu Baru"
+Form input dengan field:
+- Nama Menu (`inputNama`)
+- Kategori (`inputKategori`: makanan/minuman/dessert)
+- Harga dalam Rupiah (`inputHarga`)
+- Deskripsi Menu (`inputDesc`)
+
+Tombol **"Simpan ke Daftar"** memanggil fungsi `simpanMenuBaru()`.
+
+### 4.4 Modal "Detail Keranjang Belanja"
+- Menampilkan daftar item di keranjang (`list-keranjang`)
+- Total pembayaran (`total-harga`)
+- Tombol **"Langsung Pesan!"** memanggil `prosesPesan()`
+
+---
+
+## 5. Logika JavaScript
+
+### 5.1 Struktur Data
+```js
+let produkKantin = [ ... ];       // Data dummy 11 menu (7 makanan, 2 minuman, 2 dessert)
+let keranjangBelanja = [];        // Item yang ditambahkan ke keranjang
+let currentPage = { makanan: 1, minuman: 1, dessert: 1 }; // Halaman aktif per kategori
+const limitPerHalaman = 6;        // Maksimal 6 item per halaman
+```
+
+Setiap produk memiliki struktur: `id`, `kategori`, `nama`, `harga`, `desc`, `img`.
+
+Data dummy sengaja dibuat 7 item untuk kategori "makanan" agar halaman ke-2 (pagination) langsung teruji otomatis saat halaman dibuka.
+
+### 5.2 Fungsi-Fungsi Utama
+
+| Fungsi | Deskripsi |
+|---|---|
+| `gantiTab(kategori)` | Mereset halaman ke-1 saat pindah tab kategori, lalu render ulang |
+| `tampilkanMenuPerKategori(kat)` | Filter produk per kategori, memotong data sesuai halaman aktif (`slice`), render kartu produk ke grid, serta membangun navigasi pagination (Previous/Angka Halaman/Next) |
+| `pindahHalaman(kategori, targetPage)` | Mengubah halaman aktif kategori tertentu dan auto-scroll halus ke area tab |
+| `tampilkanSemua()` | Memanggil `tampilkanMenuPerKategori` untuk ketiga kategori sekaligus (dipakai saat load awal & setelah tambah menu) |
+| `simpanMenuBaru()` | Validasi input form, menambahkan produk baru ke `produkKantin` dengan gambar placeholder otomatis sesuai kategori, lalu render ulang & tutup modal |
+| `tambahKeKeranjang(idProduk)` | Menambahkan produk ke `keranjangBelanja`; jika sudah ada, menambah `qty` |
+| `updateBadge()` | Memperbarui angka pada badge keranjang berdasarkan total qty |
+| `renderKeranjang()` | Menampilkan isi keranjang, menghitung subtotal & total belanja, serta menonaktifkan tombol pesan jika keranjang kosong |
+| `hapusItemKeranjang(index)` | Menghapus item tertentu dari keranjang |
+| `prosesPesan()` | Simulasi pengiriman pesanan (alert), mengosongkan keranjang, dan menutup modal |
+
+### 5.3 Alur Pagination
+1. Data difilter berdasarkan kategori aktif.
+2. Index awal/akhir dihitung dari `(currentPage - 1) * limitPerHalaman`.
+3. Data dipotong (`slice`) sesuai halaman aktif.
+4. Total halaman dihitung dengan `Math.ceil(total item / limitPerHalaman)`.
+5. Navigasi pagination hanya dirender jika `totalHalaman > 1`.
+
+### 5.4 Alur Keranjang Belanja
+1. Klik **"Beli"** pada kartu produk → `tambahKeKeranjang(id)`.
+2. Badge keranjang otomatis ter-update.
+3. Klik **"Lihat Keranjang"** → `renderKeranjang()` menampilkan daftar + total harga.
+4. Item bisa dihapus per baris (`hapusItemKeranjang`).
+5. Klik **"Langsung Pesan!"** → `prosesPesan()` (saat ini masih simulasi, belum terhubung ke backend/database).
+
+---
+
+## 6. Styling Tambahan
+Didefinisikan langsung dalam file view (`<style>`):
+- `.product-card` — efek transisi & hover `translateY(-4px)` pada kartu produk
+- `.text-truncate-2` — memotong deskripsi produk menjadi maksimal 2 baris
+- `.page-link` — ukuran font dan padding kustom untuk komponen pagination
+
+---
+
+## 7. Catatan Teknis & Rencana Lanjutan
+
+- **State saat ini sepenuhnya client-side** — data produk, keranjang, dan pagination hanya tersimpan di memori browser (variabel JS), sehingga akan hilang saat halaman di-refresh.
+- **Rute `/pesan` belum menggunakan filter `auth`**, cocok untuk halaman publik/preview, namun perlu dipastikan sesuai kebijakan akses sebelum rilis produksi.
+- **Belum ada koneksi database** — langkah selanjutnya yang disarankan:
+  1. Membuat model & migrasi tabel `menu` dan `pesanan` (atau `transaksi`) di CodeIgniter 4.
+  2. Mengganti data dummy `produkKantin` dengan data hasil query dari database (melalui endpoint/controller).
+  3. Mengubah `simpanMenuBaru()` dan `prosesPesan()` agar melakukan request (AJAX/fetch) ke backend, bukan hanya memanipulasi array di memori.
+  4. Menambahkan validasi server-side untuk form tambah menu dan proses pemesanan.
+- Badge **"Mode Preview Chasly"** pada navbar mengindikasikan halaman ini masih berstatus **preview/pengembangan**, bukan versi final.
+
+---
+
+## 8. Ringkasan Diff
+
+```
+ 4 files changed, +437 lines / -0 lines
+ app/Config/Routes.php                +1
+ app/Controllers/pesan.php            +16 (baru)
+ app/Views/client/layout.php          +43 (baru)
+ app/Views/client/pesan.php          +377 (baru)
+```

@@ -6,8 +6,14 @@ use CodeIgniter\Router\RouteCollection;
 
 // Protected routes - butuh login backoffice
 $routes->get('/', 'Home::index', ['filter' => 'auth']);
+$routes->get('pesan', 'Pesan::index');
 $routes->get('/sample', 'Home::Sample', ['filter' => 'auth']);
 $routes->get('/kategori', 'Kategori::index', ['filter' => 'auth']);
+$routes->get('/kategori/create', 'Kategori::create', ['filter' => 'auth']);
+$routes->post('/kategori/store', 'Kategori::store', ['filter' => 'auth']);
+$routes->get('/kategori/edit/(:num)', 'Kategori::edit/$1', ['filter' => 'auth']);
+$routes->post('/kategori/update/(:num)', 'Kategori::update/$1', ['filter' => 'auth']);
+$routes->get('/kategori/delete/(:num)', 'Kategori::delete/$1', ['filter' => 'auth']);
 $routes->get('/menu', 'Menu::index', ['filter' => 'auth']);
 $routes->get('/menu/pending', 'Menu::pending', ['filter' => 'auth']);
 $routes->get('/menu/cancelled', 'Menu::cancelled', ['filter' => 'auth']);
@@ -20,7 +26,10 @@ $routes->get('/menu/activate/(:num)', 'Menu::activate/$1', ['filter' => 'auth'])
 $routes->get('/menu/cancel/(:num)', 'Menu::cancel/$1', ['filter' => 'auth']);
 $routes->get('/menu/delete/(:num)', 'Menu::delete/$1', ['filter' => 'auth']);
 $routes->get('/menu/draft/(:num)', 'Menu::draft/$1', ['filter' => 'auth']);
+$routes->get('/menu/restore/(:num)', 'Menu::restore/$1', ['filter' => 'auth']);
 
+$routes->get('/meja', 'Meja::index', ['filter' => 'auth']);
+$routes->post('/meja/update', 'Meja::updateStatus', ['filter' => 'auth']);
 // Auth routes (public - tidak butuh login)
 $routes->get('/login', 'Auth::login');
 $routes->post('/login', 'Auth::loginProcess');
