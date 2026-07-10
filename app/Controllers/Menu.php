@@ -41,6 +41,18 @@ class Menu extends BaseController
         return number_format($this->normalizeHarga($value), 0, ',', '.');
     }
 
+    private function normalizeDiskon($value): int
+    {
+        if (is_null($value) || $value === '') {
+            return 0;
+        }
+
+        $clean = preg_replace('/[^\d]/', '', (string) $value);
+        $diskon = $clean === '' ? 0 : (int) $clean;
+
+        return max(0, min(100, $diskon));
+    }
+
     private function prepareMenuData(array $postData): array
     {
         $data = [
@@ -48,6 +60,7 @@ class Menu extends BaseController
             'nama'        => $postData['nama'] ?? '',
             'deskripsi'   => $postData['deskripsi'] ?? '',
             'harga'       => $this->normalizeHarga($postData['harga'] ?? 0),
+            'diskon'      => $this->normalizeDiskon($postData['diskon'] ?? 0),
             'status_id'   => 1,
             'created_by'  => session()->get('id') ?? 0,
             'created_at'  => date('Y-m-d H:i:s'),
@@ -151,7 +164,7 @@ class Menu extends BaseController
 
     public function store(): RedirectResponse
     {
-        $postData = $this->request->getPost(['id_kategori', 'nama', 'deskripsi', 'harga']);
+        $postData = $this->request->getPost(['id_kategori', 'nama', 'deskripsi', 'harga', 'diskon']);
 
         if (! $this->validate($this->menuModel->getValidationRules(), $this->menuModel->getValidationMessages())) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -205,7 +218,7 @@ class Menu extends BaseController
 
     public function update($id): RedirectResponse
     {
-        $postData = $this->request->getPost(['id_kategori', 'nama', 'deskripsi', 'harga', 'existing_url_gambar']);
+        $postData = $this->request->getPost(['id_kategori', 'nama', 'deskripsi', 'harga', 'diskon', 'existing_url_gambar']);
 
         if (! $this->validate($this->menuModel->getValidationRules(), $this->menuModel->getValidationMessages())) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());

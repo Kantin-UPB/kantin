@@ -20,6 +20,22 @@ if (!function_exists('format_rupiah')) {
     }
 }
 
+if (!function_exists('hitung_harga_diskon')) {
+    /**
+     * Menghitung harga akhir setelah dipotong diskon (persentase).
+     *
+     * @param float|int $harga  Harga asli
+     * @param float|int $diskon Persentase diskon (0-100)
+     * @return float Harga setelah diskon
+     */
+    function hitung_harga_diskon(float|int $harga, float|int $diskon): float
+    {
+        $diskon = max(0, min(100, $diskon));
+
+        return round($harga - ($harga * $diskon / 100));
+    }
+}
+
 if (!function_exists('writelog')) {
     /**
      * Write activity log to database sesuai instruksi tim
