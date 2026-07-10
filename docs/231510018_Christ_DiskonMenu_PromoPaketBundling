@@ -1,0 +1,239 @@
+# Dokumentasi Fitur: Diskon Menu & Promo Paket Bundling
+**Project:** Kantin UPB (CodeIgniter 4 + Bootstrap 5 + MySQL)
+**Modul terkait:** Menu, Paket Bundling
+**Tanggal:** 10 Juli 2026
+
+---
+
+## 1. Ringkasan
+
+Dokumen ini menjelaskan dua fitur yang ditambahkan ke aplikasi Kantin UPB:
+
+| # | Fitur | Deskripsi Singkat |
+|---|-------|--------------------|
+| 1 | **Diskon Menu** | Admin dapat memberi diskon persentase (0–100%) pada satu item menu. Harga coret & harga final tampil otomatis di halaman admin. |
+| 2 | **Promo Paket Bundling** | Admin dapat menggabungkan beberapa menu ke dalam satu paket dengan harga jual khusus. Sistem menghitung otomatis harga normal (total harga menu asli), nominal hemat, dan persen hemat. |
+
+Kedua fitur mengikuti pola arsitektur yang sudah ada di project (MVC CodeIgniter 4, workflow status **Pending → Active → Cancel**, upload gambar ke folder `public/uploads/...`).
+
+---
+
+## 2. Fitur 1 — Diskon Menu
+
+### 2.1 Tujuan
+Memungkinkan admin menandai menu tertentu sedang promo/diskon tanpa mengubah harga asli (harga asli tetap tersimpan sebagai dasar perhitungan & histori).
+
+### 2.2 Perubahan Database
+
+**Tabel:** `menu`
+**Migration:** `2026-07-10-090000_AlterMenuAddDiskon.php`
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| `diskon` | `INT(3) UNSIGNED`, default `0` | Persentase diskon, rentang 0–100. Diletakkan setelah kolom `harga`. |
+
+Jalankan migration ini bersamaan dengan migration lain melalui:
+```bash
+php spark migrate
+```
+
+### 2.3 Perubahan Kode
+
+| File | Perubahan |
+|---|---|
+| `app/Database/Migrations/2026-07-10-090000_AlterMenuAddDiskon.php` | **[BARU]** Menambah kolom `diskon` ke tabel `menu`. |
+| `app/Helpers/Func_helper.php` | **[EDIT]** Tambah fungsi `hitung_harga_diskon($harga, $diskon)` — menghitung harga akhir setelah dipotong diskon. Helper ini sudah auto-load global (terdaftar di `BaseController::$helpers = ['Func']`). |
+| `app/Models/MenuModel.php` | **[EDIT]** Tambah `diskon` ke `allowedFields`; tambah validasi (`integer`, `0–100`); tambah method `getDiscountedMenuList()` untuk mengambil menu yang sedang diskon (status Active & `diskon > 0`). |
+| `app/Controllers/Menu.php` | **[EDIT]** Tambah method `normalizeDiskon()` (membersihkan & membatasi input 0–100); field `diskon` disertakan saat `store()` dan `update()`. |
+| `app/Views/menu/create.php` | **[EDIT]** Tambah input `Diskon (%)`. |
+| `app/Views/menu/edit.php` | **[EDIT]** Tambah input `Diskon (%)` terisi nilai existing. |
+| `app/Views/menu/index.php` | **[EDIT]** Tambah badge merah `-X%` di pojok kartu menu, harga asli dicoret, harga setelah diskon ditampilkan warna merah. |
+| `app/Views/menu/detail.php` | **[EDIT]** Tambah baris info diskon + harga akhir setelah diskon. |
+
+### 2.4 Logika Perhitungan
+
+```php
+hitung_harga_diskon(float|int $harga, float|int $diskon): float
+// $diskon otomatis di-clamp ke rentang 0–100
+// return: round($harga - ($harga * $diskon / 100))
+```
+
+Contoh: harga `Rp 20.000`, diskon `25%` → harga akhir `Rp 15.000`.
+
+### 2.5 Alur Penggunaan (Admin)
+
+1. Buka menu **Menu** → **Tambah Menu** atau **Edit**.
+2. Isi field **Diskon (%)** (kosongkan / isi `0` jika tidak ada diskon).
+3. Simpan. Sistem otomatis menghitung harga tampilan (tidak mengubah kolom `harga` asli).
+4. Di halaman daftar menu, item dengan diskon > 0 akan menampilkan badge `-X%` dan harga coret.
+
+### 2.6 Validasi
+
+- `diskon` harus berupa bilangan bulat.
+- Rentang wajib `0 ≤ diskon ≤ 100`.
+- Nilai di luar rentang otomatis di-*clamp* di level controller (`normalizeDiskon`) sebagai lapisan pengaman tambahan selain validasi form.
+
+---
+
+## 3. Fitur 2 — Promo Paket Bundling
+
+### 3.1 Tujuan
+Memberikan mekanisme promo gabungan: beberapa menu dijual sebagai satu paket dengan harga spesial (biasanya lebih murah daripada membeli item satuan).
+
+### 3.2 Perubahan Database
+
+**Tabel baru 1:** `paket_bundling`
+**Migration:** `2026-07-10-093000_CreatePaketBundling.php`
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| `id` | `INT` PK, auto increment | |
+| `nama_paket` | `VARCHAR(150)` | Nama promo, wajib diisi |
+| `deskripsi` | `TEXT`, nullable | |
+| `harga_paket` | `DECIMAL(12,2)`, default 0 | Harga jual spesial paket |
+| `status_id` | `INT`, default 1 | `1`=Pending, `5`=Active, `8`=Cancel (mengikuti konvensi status pada modul Menu) |
+| `url_gambar` | `VARCHAR(255)`, nullable | |
+| `created_by` | `INT`, nullable | ID user pembuat |
+| `created_at` | `DATETIME`, nullable | |
+
+**Tabel baru 2 (pivot):** `paket_bundling_item`
+**Migration:** `2026-07-10-093001_CreatePaketBundlingItem.php`
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| `id` | `INT` PK, auto increment | |
+| `id_paket` | `INT`, FK → `paket_bundling.id` (`ON DELETE CASCADE`) | |
+| `id_menu` | `INT`, FK → `menu.id` (`ON DELETE CASCADE`) | |
+| `qty` | `INT`, default 1 | Jumlah item menu tersebut dalam satu paket |
+
+> Relasi: satu paket bisa berisi banyak menu (many-to-many via pivot), dan qty menyatakan berapa banyak setiap menu ada di dalam 1 paket.
+
+Jalankan:
+```bash
+php spark migrate
+```
+Migration akan dieksekusi berurutan sesuai timestamp nama file, jadi pastikan migration diskon menu (`2026-07-10-090000`) juga sudah/ikut dijalankan lebih dulu karena `paket_bundling_item` memiliki foreign key ke tabel `menu`.
+
+### 3.3 Perubahan / File Baru
+
+| File | Status | Keterangan |
+|---|---|---|
+| `app/Database/Migrations/2026-07-10-093000_CreatePaketBundling.php` | **BARU** | Buat tabel `paket_bundling` |
+| `app/Database/Migrations/2026-07-10-093001_CreatePaketBundlingItem.php` | **BARU** | Buat tabel pivot `paket_bundling_item` |
+| `app/Models/PaketBundlingModel.php` | **BARU** | CRUD + kalkulasi total harga normal, hemat, persen hemat |
+| `app/Controllers/PaketBundling.php` | **BARU** | Controller lengkap (index/pending/cancelled/create/store/show/edit/update/activate/cancel/draft/restore/delete) |
+| `app/Views/paket_bundling/index.php` | **BARU** | Daftar paket (kartu + badge "Hemat X%") |
+| `app/Views/paket_bundling/create.php` | **BARU** | Form tambah paket + checklist menu + qty + kalkulator total (JS real-time) |
+| `app/Views/paket_bundling/edit.php` | **BARU** | Form edit paket, menu terpilih otomatis tercentang |
+| `app/Views/paket_bundling/detail.php` | **BARU** | Detail paket: isi paket, harga normal, harga paket, hemat |
+| `app/Config/Routes.php` | **EDIT** | Tambah 12 route baru untuk modul `paket-bundling` |
+| `app/Views/Layout/Menu.php` | **EDIT** | Tambah menu navigasi "Promo Bundling" (sidebar desktop & mobile offcanvas) |
+
+### 3.4 Routing
+
+| Method | URL | Fungsi |
+|---|---|---|
+| GET | `/paket-bundling` | Daftar paket **Active** |
+| GET | `/paket-bundling/pending` | Daftar paket **Pending** |
+| GET | `/paket-bundling/cancelled` | Daftar paket **Cancel** |
+| GET | `/paket-bundling/create` | Form tambah paket |
+| POST | `/paket-bundling/store` | Simpan paket baru (status awal: Pending) |
+| GET | `/paket-bundling/{id}` | Detail paket |
+| GET | `/paket-bundling/edit/{id}` | Form edit paket |
+| POST | `/paket-bundling/update/{id}` | Simpan perubahan paket |
+| GET | `/paket-bundling/activate/{id}` | Ubah status → Active |
+| GET | `/paket-bundling/cancel/{id}` | Ubah status → Cancel |
+| GET | `/paket-bundling/draft/{id}` | Ubah status kembali → Pending |
+| GET | `/paket-bundling/restore/{id}` | Pulihkan dari Cancel → Pending |
+| GET | `/paket-bundling/delete/{id}` | Hapus permanen (hanya untuk status Cancel) |
+
+Semua route dilindungi filter `auth` (hanya user login/admin yang bisa akses), konsisten dengan modul Menu/Kategori/Meja yang sudah ada.
+
+### 3.5 Logika Perhitungan
+
+Dihitung otomatis di `PaketBundlingModel::withComputedTotals()` setiap kali data paket diambil:
+
+```
+harga_normal  = Σ (harga_menu_i × qty_i)     untuk semua item dalam paket
+hemat         = MAX(0, harga_normal - harga_paket)
+persen_hemat  = ROUND((hemat / harga_normal) × 100)     jika harga_normal > 0
+```
+
+Contoh: Paket berisi Nasi Goreng (Rp 15.000 × 1) + Es Teh (Rp 5.000 × 1) = harga normal Rp 20.000. Admin set harga paket Rp 16.000 → hemat Rp 4.000 (20%).
+
+### 3.6 Alur Penggunaan (Admin)
+
+1. Buka menu **Promo Bundling** di sidebar.
+2. Klik **Tambah Paket Bundling**.
+3. Isi nama paket, deskripsi, harga paket, dan (opsional) gambar.
+4. Centang menu-menu yang termasuk dalam paket dari daftar menu aktif, atur qty masing-masing. Total harga normal langsung terlihat secara real-time di bawah form (dihitung JavaScript di sisi client sebagai preview, dan dihitung ulang secara resmi di server saat disimpan).
+5. Simpan → paket masuk status **Pending**.
+6. Dari daftar **Pending**, admin bisa **Activate** agar paket tampil di daftar **Active**, atau **Cancel** bila dibatalkan.
+7. Paket berstatus **Cancel** bisa **Restore** (kembali ke Pending) atau **Hapus Permanen**.
+
+### 3.7 Validasi & Aturan Bisnis
+
+- `nama_paket` wajib, maksimal 150 karakter.
+- `deskripsi` opsional, maksimal 500 karakter.
+- `harga_paket` wajib, harus angka, tidak boleh negatif.
+- Wajib memilih **minimal 1 menu** untuk paket (divalidasi di controller, di luar validasi form bawaan CI4).
+- Menu yang bisa dipilih hanya menu dengan `status_id = 5` (Active) — diambil melalui `PaketBundlingModel::getAvailableMenus()`.
+- Paket hanya bisa dihapus permanen jika statusnya **Cancel** (mencegah penghapusan data yang masih dipakai).
+- Saat update, seluruh baris di `paket_bundling_item` untuk paket tsb dihapus lalu diisi ulang sesuai pilihan terbaru (`saveItems()`), sehingga data isi paket selalu konsisten dengan form terakhir yang disimpan.
+
+---
+
+## 4. Struktur File yang Terdampak (Ringkasan)
+
+```
+app/
+├── Config/
+│   └── Routes.php                                   [EDIT]
+├── Controllers/
+│   ├── Menu.php                                     [EDIT]
+│   └── PaketBundling.php                            [BARU]
+├── Database/Migrations/
+│   ├── 2026-07-10-090000_AlterMenuAddDiskon.php      [BARU]
+│   ├── 2026-07-10-093000_CreatePaketBundling.php     [BARU]
+│   └── 2026-07-10-093001_CreatePaketBundlingItem.php [BARU]
+├── Helpers/
+│   └── Func_helper.php                               [EDIT]
+├── Models/
+│   ├── MenuModel.php                                 [EDIT]
+│   └── PaketBundlingModel.php                        [BARU]
+└── Views/
+    ├── Layout/Menu.php                                [EDIT]
+    ├── menu/
+    │   ├── create.php                                 [EDIT]
+    │   ├── edit.php                                    [EDIT]
+    │   ├── index.php                                    [EDIT]
+    │   └── detail.php                                   [EDIT]
+    └── paket_bundling/
+        ├── index.php                                   [BARU]
+        ├── create.php                                  [BARU]
+        ├── edit.php                                    [BARU]
+        └── detail.php                                  [BARU]
+```
+
+---
+
+## 5. Instalasi / Deployment
+
+1. Salin seluruh file di atas ke lokasi yang sesuai pada project.
+2. Jalankan migration:
+   ```bash
+   php spark migrate
+   ```
+   Ini akan menambahkan kolom `diskon` pada tabel `menu`, serta membuat tabel `paket_bundling` dan `paket_bundling_item`.
+3. Pastikan folder upload gambar paket bundling bisa dibuat otomatis oleh aplikasi: `public/uploads/paket_bundling/` (dibuat otomatis oleh controller jika belum ada, tapi pastikan folder `public/uploads/` writable oleh web server).
+4. Login sebagai admin, cek menu sidebar baru **Promo Bundling**.
+5. (Opsional) Jalankan `php spark migrate:status` untuk memastikan seluruh migration baru berhasil diterapkan.
+
+---
+
+## 6. Batasan & Rekomendasi Pengembangan Lanjutan
+
+- Fitur diskon & bundling saat ini hanya terintegrasi di sisi **admin**. Halaman client `app/Views/client/pesan.php` masih menggunakan data dummy JavaScript dan belum terhubung ke tabel `menu`/`paket_bundling` — perlu pekerjaan lanjutan untuk menampilkan promo ini ke pelanggan.
+- Belum ada validasi otomatis untuk menonaktifkan paket bundling jika salah satu menu di dalamnya dinonaktifkan/dihapus (saat ini akan tampil sebagai "Menu dihapus" di list isi paket).
+- Belum ada batas tanggal berlaku (periode promo) untuk diskon menu maupun paket bundling — bisa ditambahkan kolom `berlaku_mulai` / `berlaku_sampai` jika dibutuhkan.
+- Field `diskon` pada menu dan `paket_bundling` tidak saling memengaruhi — jika sebuah menu memiliki diskon individual sekaligus masuk ke sebuah paket, perhitungan harga paket tetap menggunakan `harga` asli menu (bukan harga setelah diskon individual). Perlu didiskusikan dengan tim apakah ini perilaku yang diinginkan.
