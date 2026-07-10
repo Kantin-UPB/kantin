@@ -37,6 +37,19 @@
         </ul>
     </div>
 
+    <div class="col-12 mb-3">
+        <div class="d-flex justify-content-end align-items-center gap-2">
+            <label for="sortHarga" class="form-label fw-semibold mb-0 text-muted small">
+                <i class="bi bi-sort-down me-1"></i> Urutkan Harga
+            </label>
+            <select class="form-select form-select-sm w-auto shadow-sm" id="sortHarga" onchange="ubahSortHarga(this.value)">
+                <option value="default">Default</option>
+                <option value="asc">Termurah &rarr; Termahal</option>
+                <option value="desc">Termahal &rarr; Termurah</option>
+            </select>
+        </div>
+    </div>
+
     <div class="col-12">
         <div class="tab-content" id="kontenKategori">
             
@@ -153,6 +166,18 @@
     
     const limitPerHalaman = 6; // Batas maksimal isi 1 page sesuai permintaanmu
 
+    // Status urutan harga aktif: 'default', 'asc' (rendah->tinggi), 'desc' (tinggi->rendah)
+    let sortHargaAktif = 'default';
+
+    function ubahSortHarga(value) {
+        sortHargaAktif = value;
+        // Reset semua kategori ke halaman 1 biar urutan baru konsisten dari awal
+        currentPage.makanan = 1;
+        currentPage.minuman = 1;
+        currentPage.dessert = 1;
+        tampilkanSemua();
+    }
+
     const placeholderImages = {
         makanan: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500',
         minuman: 'https://images.unsplash.com/photo-1497515114629-f71d768fd07c?w=500',
@@ -172,7 +197,14 @@
         paginationContainer.innerHTML = '';
 
         // 1. Filter menu berdasarkan kategori saat ini
-        const menuTerfilter = produkKantin.filter(item => item.kategori === kat);
+        let menuTerfilter = produkKantin.filter(item => item.kategori === kat);
+
+        // 1b. Urutkan berdasarkan harga jika filter sort aktif dipilih
+        if (sortHargaAktif === 'asc') {
+            menuTerfilter = menuTerfilter.slice().sort((a, b) => a.harga - b.harga);
+        } else if (sortHargaAktif === 'desc') {
+            menuTerfilter = menuTerfilter.slice().sort((a, b) => b.harga - a.harga);
+        }
         
         // 2. Hitung batasan index item untuk pagination (Rumus potong data 6 item)
         const indexMulai = (currentPage[kat] - 1) * limitPerHalaman;
