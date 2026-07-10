@@ -1,0 +1,25 @@
+Laporan Fitur Kategori - Kantin_SI_UPB
+Nama: Elvin
+Fitur: Manajemen Kategori
+1. Latar Belakang
+Fitur kategori digunakan untuk mengelompokkan menu sehingga pengelolaan data menjadi lebih terstruktur.
+2. Tujuan
+- Menambah kategori
+- Mengubah kategori
+- Soft delete kategori
+- Menampilkan daftar kategori
+3. Struktur Tabel
+Field	Keterangan
+id	Primary Key
+namakategori	Nama kategori
+createdat	Tanggal dibuat
+createdby	Pembuat
+updatedat	Tanggal diubah
+updatedby	Pengubah
+statusid	Status
+4. Alur
+Admin membuka menu kategori, melakukan tambah, ubah, atau menonaktifkan kategori. Data disimpan ke database dan ditampilkan kembali.
+5. Validasi
+Nama wajib diisi, tidak boleh duplikat, status aktif=5, soft delete=8.
+6. Kesimpulan
+Modul kategori mendukung pengelolaan menu secara terstruktur pada aplikasi Kantin_SI_UPB.
