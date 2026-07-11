@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-bs-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -11,84 +11,41 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
-        html, body {
-            height: 100%;
-            overflow: hidden;
+        [data-bs-theme="dark"] {
+            --bs-body-bg: #14181d;
+            --bs-card-bg: #1f242b;
+            --bs-border-color: #2a2f36;
+            --bs-tertiary-bg: #2a2f36;
         }
 
-        body {
-            display: flex;
-            flex-direction: column;
-            background-color: #14181d;
-            color: #f1f1f1;
-        }
-
-        .kitchen-topbar {
-            flex: 0 0 auto;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #2a2f36;
-        }
-
-        .kitchen-grid-area {
-            flex: 1 1 auto;
+        .kds-item-list {
+            max-height: 260px;
             overflow-y: auto;
         }
 
-        .order-card {
-            display: flex;
-            flex-direction: column;
-            background-color: #1f242b;
-            border: 1px solid #2a2f36;
-            border-radius: 0.75rem;
-            padding: 1rem 1.25rem;
-            transition: background-color .3s ease;
-        }
-
-        .order-card .order-meja {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .order-card .order-elapsed {
-            font-size: 0.95rem;
-            color: #adb5bd;
-        }
-
-        .order-card ul.order-items {
-            margin: 0.75rem 0;
-            padding-left: 0;
-            list-style: none;
-            max-height: 220px;
-            overflow-y: auto;
-        }
-
-        .order-card .order-item {
-            padding: 0.4rem 0.5rem;
-            border-radius: 0.4rem;
+        .kds-item-list .list-group-item-action {
             cursor: pointer;
         }
 
-        .order-card .order-item:hover {
-            background-color: rgba(255, 255, 255, 0.08);
+        .order-card {
+            transition: background-color .3s ease, border-color .3s ease;
         }
 
-        .order-card.order-delayed {
+        .order-card.order-delayed,
+        .order-card.order-delayed .list-group-item {
             background-color: #7a1f1f;
             border-color: #a33;
-        }
-
-        .order-card.order-delayed .order-elapsed {
-            color: #ffd9d9;
+            color: #fff;
         }
     </style>
 </head>
 
-<body>
-    <div class="kitchen-topbar d-flex justify-content-between align-items-center flex-wrap gap-2">
+<body class="d-flex flex-column vh-100 overflow-hidden">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 p-3 border-bottom flex-shrink-0">
         <h1 class="h4 mb-0"><i class="bi bi-fire me-2"></i><?= esc($title) ?></h1>
         <div class="d-flex align-items-center gap-2">
             <span id="jamSekarang" class="fs-5 fw-semibold"></span>
-            <label for="pilihGrid" class="mb-0 small text-muted">Grid</label>
+            <label for="pilihGrid" class="mb-0 small text-secondary">Grid</label>
             <select id="pilihGrid" class="form-select form-select-sm w-auto" onchange="ubahGrid(this.value)">
                 <option value="2">2 kolom</option>
                 <option value="3">3 kolom</option>
@@ -105,27 +62,27 @@
         </div>
     </div>
 
-    <div class="container-fluid kitchen-grid-area p-4">
+    <div class="flex-grow-1 overflow-auto p-3">
         <div id="gridOrder" class="row row-cols-4 g-3"></div>
     </div>
 
     <div class="modal fade" id="modalQty" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark text-white border-secondary">
-                <div class="modal-header border-secondary">
+            <div class="modal-content">
+                <div class="modal-header">
                     <h5 class="modal-title" id="qtyModalNama">Nama Item</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <p class="text-muted mb-2">Berapa qty yang mau ditandai selesai?</p>
+                    <p class="text-secondary mb-2">Berapa qty yang mau ditandai selesai?</p>
                     <div class="d-flex justify-content-center align-items-center gap-3">
                         <button type="button" class="btn btn-outline-light" onclick="ubahQtyModal(-1)">-</button>
                         <span id="qtyModalValue" class="fs-3 fw-bold">1</span>
                         <button type="button" class="btn btn-outline-light" onclick="ubahQtyModal(1)">+</button>
                     </div>
-                    <button type="button" class="btn btn-link text-info mt-2" onclick="pilihMaxQty()">Pilih Maksimal (<span id="qtyModalMaxLabel"></span>)</button>
+                    <button type="button" class="btn btn-link" onclick="pilihMaxQty()">Pilih Maksimal (<span id="qtyModalMaxLabel"></span>)</button>
                 </div>
-                <div class="modal-footer border-secondary">
+                <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-success" onclick="konfirmasiQty()">Tandai Selesai</button>
                 </div>
@@ -149,7 +106,7 @@
 
             if (dataOrder.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-12 text-center text-muted py-5">
+                    <div class="col-12 text-center text-secondary py-5">
                         <i class="bi bi-check2-circle fs-1"></i>
                         <p class="mt-2">Semua order sudah selesai.</p>
                     </div>`;
@@ -162,22 +119,26 @@
                     .map((item) => {
                         const sisa = item.qty - item.qtyDone;
                         return `
-                            <li class="order-item d-flex justify-content-between align-items-center" onclick="klikItem(${order.id}, ${item.id})">
+                            <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" onclick="klikItem(${order.id}, ${item.id})">
                                 <span>${item.nama}</span>
-                                <span class="badge bg-secondary">@${sisa}</span>
+                                <span class="badge bg-secondary rounded-pill">@${sisa}</span>
                             </li>`;
                     })
                     .join('');
 
                 return `
                     <div class="col">
-                        <div class="order-card h-100" data-waktu="${order.waktu}">
-                            <div class="order-meja">${order.meja}</div>
-                            <div class="order-elapsed"></div>
-                            <ul class="order-items">${itemsHtml}</ul>
-                            <button type="button" class="btn btn-success w-100 mt-auto" onclick="selesaikanSemua(${order.id})">
-                                <i class="bi bi-check2-all me-1"></i> Selesai Semua
-                            </button>
+                        <div class="card h-100 order-card" data-waktu="${order.waktu}">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span class="fw-bold fs-5">${order.meja}</span>
+                                <small class="order-elapsed text-secondary"></small>
+                            </div>
+                            <ul class="list-group list-group-flush kds-item-list flex-grow-1">${itemsHtml}</ul>
+                            <div class="card-footer">
+                                <button type="button" class="btn btn-success w-100" onclick="selesaikanSemua(${order.id})">
+                                    <i class="bi bi-check2-all me-1"></i> Selesai Semua
+                                </button>
+                            </div>
                         </div>
                     </div>`;
             }).join('');
