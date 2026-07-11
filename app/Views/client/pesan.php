@@ -34,6 +34,9 @@
             <li class="nav-item">
                 <button class="nav-link fw-bold" id="dessert-tab" data-bs-toggle="tab" data-bs-target="#dessert" type="button" onclick="gantiTab('dessert')"><i class="bi bi-ice-cream me-2"></i>Dessert</button>
             </li>
+            <li class="nav-item">
+                <button class="nav-link fw-bold" id="promo-tab" data-bs-toggle="tab" data-bs-target="#promo" type="button" onclick="gantiTab('promo')"><i class="bi bi-stars me-2"></i>Promo</button>
+            </li>
         </ul>
     </div>
 
@@ -66,6 +69,11 @@
             <div class="tab-pane fade" id="dessert">
                 <div class="row g-4" id="grid-dessert"></div>
                 <div class="d-flex justify-content-center mt-4" id="pagination-dessert"></div>
+            </div>
+
+            <div class="tab-pane fade" id="promo">
+                <div class="row g-4" id="grid-promo"></div>
+                <div class="d-flex justify-content-center mt-4" id="pagination-promo"></div>
             </div>
             
         </div>
@@ -155,13 +163,16 @@
         { id: 11, kategori: 'dessert', nama: 'Puding Coklat Lava', harga: 8000, desc: 'Puding lembut dengan vla susu lumer', img: 'https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?w=500' }
     ];
 
+    let paketPromo = <?= json_encode($paketPromo ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+
     let keranjangBelanja = [];
     
     // Status halaman aktif untuk tiap kategori
     let currentPage = {
         makanan: 1,
         minuman: 1,
-        dessert: 1
+        dessert: 1,
+        promo: 1
     };
     
     const limitPerHalaman = 6; // Batas maksimal isi 1 page sesuai permintaanmu
@@ -175,22 +186,116 @@
         currentPage.makanan = 1;
         currentPage.minuman = 1;
         currentPage.dessert = 1;
+        currentPage.promo = 1;
         tampilkanSemua();
     }
 
     const placeholderImages = {
         makanan: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500',
         minuman: 'https://images.unsplash.com/photo-1497515114629-f71d768fd07c?w=500',
-        dessert: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=500'
+        dessert: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=500',
+        promo: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=500'
     };
 
     function gantiTab(kategori) {
         // Reset ke page 1 tiap kali pindah tab biar gak bingung
         currentPage[kategori] = 1;
-        tampilkanMenuPerKategori(kategori);
+        if (kategori === 'promo') {
+            tampilkanPromo();
+        } else {
+            tampilkanMenuPerKategori(kategori);
+        }
+    }
+
+    function tampilkanPromo() {
+        const grid = document.getElementById('grid-promo');
+        const paginationContainer = document.getElementById('pagination-promo');
+        grid.innerHTML = '';
+        paginationContainer.innerHTML = '';
+
+        let daftarPromo = paketPromo.slice();
+
+        if (sortHargaAktif === 'asc') {
+            daftarPromo.sort((a, b) => a.harga - b.harga);
+        } else if (sortHargaAktif === 'desc') {
+            daftarPromo.sort((a, b) => b.harga - a.harga);
+        }
+
+        const indexMulai = (currentPage.promo - 1) * limitPerHalaman;
+        const indexSelesai = indexMulai + limitPerHalaman;
+        const promoHalamanIni = daftarPromo.slice(indexMulai, indexSelesai);
+
+        if (promoHalamanIni.length === 0) {
+            grid.innerHTML = `<div class="col-12 text-center text-muted py-5">Belum ada paket promo aktif.</div>`;
+            return;
+        }
+
+        promoHalamanIni.forEach(item => {
+            const gambar = item.img || placeholderImages.promo;
+            const badgeHemat = item.persen_hemat > 0
+                ? `<span class="badge bg-danger position-absolute top-0 start-0 m-2"><i class="bi bi-stars me-1"></i>Hemat ${item.persen_hemat}%</span>`
+                : '';
+            const hargaHTML = item.hemat > 0
+                ? `<small class="text-muted text-decoration-line-through me-1">Rp ${item.harga_normal.toLocaleString('id-ID')}</small><h6 class="text-danger fw-bold mb-2 d-inline">Rp ${item.harga.toLocaleString('id-ID')}</h6>`
+                : `<h6 class="text-danger fw-bold mb-2">Rp ${item.harga.toLocaleString('id-ID')}</h6>`;
+            const isiPaket = (item.items || []).length > 0
+                ? `<ul class="text-muted small mb-2 ps-3" style="font-size: 10px;">${item.items.map(isi => `<li>${isi.qty}x ${isi.nama || 'Menu'}</li>`).join('')}</ul>`
+                : '';
+
+            grid.innerHTML += `
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden product-card position-relative">
+                        ${badgeHemat}
+                        <img src="${gambar}" class="card-img-top" style="height: 150px; object-fit: cover;" alt="${item.nama}">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <h6 class="card-title fw-bold text-dark mb-1">${item.nama}</h6>
+                                <p class="text-muted small mb-2 text-truncate-2" style="font-size: 11px; min-height: 32px;">${item.desc || 'Paket bundling spesial'}</p>
+                                ${isiPaket}
+                            </div>
+                            <div>
+                                ${hargaHTML}
+                                <button class="btn btn-outline-danger btn-sm w-100 fw-bold" onclick="tambahPaketKeKeranjang(${item.id})">
+                                    <i class="bi bi-plus-lg"></i> Beli Paket
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        const totalHalaman = Math.ceil(daftarPromo.length / limitPerHalaman);
+        if (totalHalaman > 1) {
+            let tombolHTML = `<nav aria-label="Page navigation"><ul class="pagination pagination-sm mb-0">`;
+
+            tombolHTML += `
+                <li class="page-item ${currentPage.promo === 1 ? 'disabled' : ''}">
+                    <a class="page-link text-muted" href="javascript:void(0)" onclick="pindahHalaman('promo', ${currentPage.promo - 1})">Previous</a>
+                </li>`;
+
+            for (let i = 1; i <= totalHalaman; i++) {
+                tombolHTML += `
+                    <li class="page-item ${currentPage.promo === i ? 'active' : ''}">
+                        <a class="page-link" href="javascript:void(0)" onclick="pindahHalaman('promo', ${i})">${i}</a>
+                    </li>`;
+            }
+
+            tombolHTML += `
+                <li class="page-item ${currentPage.promo === totalHalaman ? 'disabled' : ''}">
+                    <a class="page-link text-primary fw-semibold" href="javascript:void(0)" onclick="pindahHalaman('promo', ${currentPage.promo + 1})">Next Page &raquo;</a>
+                </li>`;
+
+            tombolHTML += `</ul></nav>`;
+            paginationContainer.innerHTML = tombolHTML;
+        }
     }
 
     function tampilkanMenuPerKategori(kat) {
+        if (kat === 'promo') {
+            tampilkanPromo();
+            return;
+        }
         const grid = document.getElementById(`grid-${kat}`);
         const paginationContainer = document.getElementById(`pagination-${kat}`);
         grid.innerHTML = '';
@@ -280,6 +385,7 @@
         tampilkanMenuPerKategori('makanan');
         tampilkanMenuPerKategori('minuman');
         tampilkanMenuPerKategori('dessert');
+        tampilkanPromo();
     }
 
     function simpanMenuBaru() {
@@ -317,15 +423,38 @@
 
     function tambahKeKeranjang(idProduk) {
         const produk = produkKantin.find(p => p.id === idProduk);
-        const sudahAda = keranjangBelanja.find(item => item.id === idProduk);
+        const sudahAda = keranjangBelanja.find(item => item.tipe !== 'paket' && item.id === idProduk);
 
         if (sudahAda) {
             sudahAda.qty += 1;
         } else {
-            keranjangBelanja.push({ ...produk, qty: 1 });
+            keranjangBelanja.push({ ...produk, qty: 1, tipe: 'menu' });
         }
         updateBadge();
         alert(`✔ ${produk.nama} dimasukkan ke keranjang!`);
+    }
+
+    function tambahPaketKeKeranjang(idPaket) {
+        const paket = paketPromo.find(p => p.id === idPaket);
+        if (!paket) return;
+
+        const sudahAda = keranjangBelanja.find(item => item.tipe === 'paket' && item.id === idPaket);
+
+        if (sudahAda) {
+            sudahAda.qty += 1;
+        } else {
+            keranjangBelanja.push({
+                id: paket.id,
+                nama: paket.nama,
+                harga: paket.harga,
+                desc: paket.desc,
+                img: paket.img || placeholderImages.promo,
+                qty: 1,
+                tipe: 'paket'
+            });
+        }
+        updateBadge();
+        alert(`✔ Paket "${paket.nama}" dimasukkan ke keranjang!`);
     }
 
     function updateBadge() {

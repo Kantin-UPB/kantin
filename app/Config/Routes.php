@@ -45,6 +45,12 @@ $routes->get('/paket-bundling/delete/(:num)', 'PaketBundling::delete/$1', ['filt
 $routes->get('/paket-bundling/draft/(:num)', 'PaketBundling::draft/$1', ['filter' => 'auth']);
 $routes->get('/paket-bundling/restore/(:num)', 'PaketBundling::restore/$1', ['filter' => 'auth']);
 
+$routes->get('/mahasiswa/login', 'ClientAuth::login');
+$routes->post('/mahasiswa/login', 'ClientAuth::loginProcess');
+$routes->get('/mahasiswa/register', 'ClientAuth::register');
+$routes->post('/mahasiswa/register', 'ClientAuth::registerProcess');
+$routes->get('/mahasiswa/logout', 'ClientAuth::logout');
+
 // Auth routes (public - tidak butuh login)
 $routes->get('/login', 'Auth::login');
 $routes->post('/login', 'Auth::loginProcess');
