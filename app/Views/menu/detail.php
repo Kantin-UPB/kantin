@@ -38,7 +38,19 @@
             </div>
             <div class="col-md-6">
                 <p class="mb-2"><strong>Harga</strong></p>
-                <p><?= esc(format_rupiah((float) ($menu['harga'] ?? 0))) ?></p>
+                <?php if ((int) ($menu['diskon'] ?? 0) > 0): ?>
+                    <p class="mb-1">
+                        <span class="text-decoration-line-through text-muted"><?= esc(format_rupiah((float) ($menu['harga'] ?? 0))) ?></span>
+                        <span class="badge bg-danger ms-2">-<?= esc((int) $menu['diskon']) ?>%</span>
+                    </p>
+                    <p class="fw-bold text-danger fs-5"><?= esc(format_rupiah(hitung_harga_diskon((float) ($menu['harga'] ?? 0), (int) $menu['diskon']))) ?></p>
+                <?php else: ?>
+                    <p><?= esc(format_rupiah((float) ($menu['harga'] ?? 0))) ?></p>
+                <?php endif; ?>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-2"><strong>Diskon</strong></p>
+                <p><?= (int) ($menu['diskon'] ?? 0) > 0 ? esc((int) $menu['diskon']) . '%' : 'Tidak ada diskon' ?></p>
             </div>
             <div class="col-md-6">
                 <p class="mb-2"><strong>Gambar</strong></p>

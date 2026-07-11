@@ -43,6 +43,15 @@
             </div>
 
             <div class="col-md-6">
+                <label for="diskon" class="form-label">Diskon (%)</label>
+                <div class="input-group">
+                    <input type="number" name="diskon" id="diskon" class="form-control" min="0" max="100" step="1" value="<?= esc(old('diskon', $menu['diskon'] ?? 0)) ?>" placeholder="0">
+                    <span class="input-group-text">%</span>
+                </div>
+                <div class="form-text">Kosongkan atau isi 0 jika menu tidak sedang diskon.</div>
+            </div>
+
+            <div class="col-md-6">
                 <label for="url_gambar" class="form-label">Gambar Menu</label>
                 <input type="file" name="url_gambar" id="url_gambar" class="form-control" accept="image/*">
                 <div class="form-text">Pilih gambar dari galeri perangkat Anda.</div>

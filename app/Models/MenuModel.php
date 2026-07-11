@@ -18,6 +18,7 @@ class MenuModel extends Model
         'nama',
         'deskripsi',
         'harga',
+        'diskon',
         'status_id',
         'url_gambar',
         'created_by',
@@ -58,6 +59,15 @@ class MenuModel extends Model
                 'greater_than_equal_to'=> 'Harga tidak boleh negatif.',
             ],
         ],
+        'diskon' => [
+            'label'  => 'Diskon',
+            'rules'  => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[100]',
+            'errors' => [
+                'integer'               => 'Diskon harus berupa angka.',
+                'greater_than_equal_to' => 'Diskon tidak boleh negatif.',
+                'less_than_equal_to'    => 'Diskon maksimal 100%.',
+            ],
+        ],
         'url_gambar' => [
             'label'  => 'Gambar',
             'rules'  => 'permit_empty|max_length[255]',
@@ -84,6 +94,11 @@ class MenuModel extends Model
             'required' => 'Harga wajib diisi.',
             'numeric'  => 'Harga harus berupa angka.',
             'greater_than_equal_to' => 'Harga tidak boleh negatif.',
+        ],
+        'diskon' => [
+            'integer'               => 'Diskon harus berupa angka.',
+            'greater_than_equal_to' => 'Diskon tidak boleh negatif.',
+            'less_than_equal_to'    => 'Diskon maksimal 100%.',
         ],
         'url_gambar' => [
             'max_length' => 'URL gambar maksimal 255 karakter.',
@@ -147,6 +162,16 @@ class MenuModel extends Model
             ->join('kategori', 'kategori.id_kategori = menu.id_kategori', 'left')
             ->where('menu.status_id', 8)
             ->orderBy('menu.id', 'DESC')
+            ->findAll();
+    }
+
+    public function getDiscountedMenuList(): array
+    {
+        return $this->select('menu.*, kategori.nama_kategori')
+            ->join('kategori', 'kategori.id_kategori = menu.id_kategori', 'left')
+            ->where('menu.status_id', 5)
+            ->where('menu.diskon >', 0)
+            ->orderBy('menu.diskon', 'DESC')
             ->findAll();
     }
 

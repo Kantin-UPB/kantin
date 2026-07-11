@@ -66,6 +66,22 @@
     .menu-card-price {
         font-weight: 700;
     }
+
+    .menu-card-price-original {
+        font-size: 0.85rem;
+        color: #adb5bd;
+        text-decoration: line-through;
+        font-weight: 400;
+        margin-right: 0.4rem;
+    }
+
+    .diskon-badge {
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0.5rem;
+        z-index: 2;
+    }
 </style>
 
 <div class="row g-3 mb-4">
@@ -86,29 +102,24 @@
             <i class="bi bi-x-circle me-1"></i> Cancelled Menus
         </a>
     </div>
-    <div class="col-auto ms-auto d-flex align-items-center gap-2">
-        <label for="sortHargaMenu" class="form-label fw-semibold mb-0 small text-muted">
-            <i class="bi bi-sort-down me-1"></i> Urutkan Harga
-        </label>
-        <select class="form-select form-select-sm w-auto" id="sortHargaMenu" onchange="urutkanMenuBerdasarkanHarga(this.value)">
-            <option value="default">Default</option>
-            <option value="asc">Termurah &rarr; Termahal</option>
-            <option value="desc">Termahal &rarr; Termurah</option>
-        </select>
-    </div>
-    <div class="col-auto">
+    <div class="col-auto ms-auto">
         <a href="<?= site_url('menu/create') ?>" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-circle me-1"></i> Add Menu
         </a>
     </div>
 </div>
 
-<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4" id="gridMenu">
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4">
     <?php if (! empty($menu)): ?>
         <?php foreach ($menu as $item): ?>
-            <div class="col" data-harga="<?= (int) ($item['harga'] ?? 0) ?>">
+            <div class="col">
                 <div class="card menu-card h-100 shadow-sm">
                     <div class="menu-card-header position-relative">
+                        <?php if ((int) ($item['diskon'] ?? 0) > 0): ?>
+                            <span class="badge bg-danger diskon-badge">
+                                <i class="bi bi-tag-fill me-1"></i>-<?= esc((int) $item['diskon']) ?>%
+                            </span>
+                        <?php endif; ?>
                         <div class="d-flex justify-content-center align-items-center">
                             <div class="text-center">
                                 <div class="fw-bold fs-5"><?= esc($item['id']) ?></div>
@@ -149,8 +160,13 @@
                         </div>
                         <h5 class="card-title mb-1"><?= esc($item['nama']) ?></h5>
                         <p class="text-muted small mb-3"><?= esc($item['deskripsi'] ?? '-') ?></p>
-                        <div class="d-flex justify-content-end">
-                            <span class="menu-card-price"><?= esc(format_rupiah((float) ($item['harga'] ?? 0))) ?></span>
+                        <div class="d-flex justify-content-end align-items-baseline">
+                            <?php if ((int) ($item['diskon'] ?? 0) > 0): ?>
+                                <span class="menu-card-price-original"><?= esc(format_rupiah((float) ($item['harga'] ?? 0))) ?></span>
+                                <span class="menu-card-price text-danger"><?= esc(format_rupiah(hitung_harga_diskon((float) ($item['harga'] ?? 0), (int) $item['diskon']))) ?></span>
+                            <?php else: ?>
+                                <span class="menu-card-price"><?= esc(format_rupiah((float) ($item['harga'] ?? 0))) ?></span>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -168,32 +184,3 @@
         </div>
     <?php endif; ?>
 </div>
-
-<script>
-    // Simpan urutan asli (default) tiap kali halaman dimuat, biar bisa dikembalikan lagi
-    let urutanAsliMenu = null;
-
-    function urutkanMenuBerdasarkanHarga(mode) {
-        const grid = document.getElementById('gridMenu');
-        if (!grid) return;
-
-        let cols = Array.from(grid.children).filter(el => el.classList.contains('col'));
-        if (cols.length === 0) return;
-
-        // Simpan urutan asli sekali saja (sebelum diurutkan)
-        if (urutanAsliMenu === null) {
-            urutanAsliMenu = cols.slice();
-        }
-
-        let hasilUrutan;
-        if (mode === 'asc') {
-            hasilUrutan = cols.slice().sort((a, b) => parseFloat(a.dataset.harga) - parseFloat(b.dataset.harga));
-        } else if (mode === 'desc') {
-            hasilUrutan = cols.slice().sort((a, b) => parseFloat(b.dataset.harga) - parseFloat(a.dataset.harga));
-        } else {
-            hasilUrutan = urutanAsliMenu;
-        }
-
-        hasilUrutan.forEach(el => grid.appendChild(el));
-    }
-</script>
