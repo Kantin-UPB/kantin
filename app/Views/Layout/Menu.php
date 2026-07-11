@@ -104,6 +104,7 @@ $matches = static function (string $path) use ($currentPath): bool {
             <a class="nav-link <?= $matches('/menu') ? 'active' : '' ?>" href="<?= site_url('/menu') ?>" data-nav="menu"><i class="bi bi-journal-text me-2"></i><span>Menu</span></a>
             <a class="nav-link <?= $matches('/kategori') ? 'active' : '' ?>" href="<?= site_url('/kategori') ?>" data-nav="kategori"><i class="bi bi-tags me-2"></i><span>Kategori</span></a>
             <a class="nav-link <?= $matches('/paket-bundling') ? 'active' : '' ?>" href="<?= site_url('/paket-bundling') ?>" data-nav="paket-bundling"><i class="bi bi-box-seam me-2"></i><span>Promo Bundling</span></a>
+            <a class="nav-link <?= $matches('/kitchen') ? 'active' : '' ?>" href="<?= site_url('/kitchen') ?>" data-nav="kitchen"><i class="bi bi-fire me-2"></i><span>Kitchen Display</span></a>
             <a class="nav-link <?= $matches('/data') ? 'active' : '' ?>" href="<?= site_url('/data') ?>" data-nav="data"><i class="bi bi-database me-2"></i><span>Data</span></a>
             <a class="nav-link <?= $matches('/transaction') ? 'active' : '' ?>" href="<?= site_url('/transaction') ?>" data-nav="transaction"><i class="bi bi-cart3 me-2"></i><span>Transaction</span></a>
             <a class="nav-link <?= $matches('/report') ? 'active' : '' ?>" href="<?= site_url('/report') ?>" data-nav="report"><i class="bi bi-file-earmark-bar-graph me-2"></i><span>Report</span></a>
@@ -134,6 +135,9 @@ $matches = static function (string $path) use ($currentPath): bool {
                     </a>
                     <a class="nav-link <?= $matches('/paket-bundling') ? 'active' : '' ?>" href="<?= site_url('/paket-bundling') ?>" data-nav="paket-bundling">
                         <i class="bi bi-box-seam me-2"></i><span>Promo Bundling</span>
+                    </a>
+                    <a class="nav-link <?= $matches('/kitchen') ? 'active' : '' ?>" href="<?= site_url('/kitchen') ?>" data-nav="kitchen">
+                        <i class="bi bi-fire me-2"></i><span>Kitchen Display</span>
                     </a>
                     <a class="nav-link <?= $matches('/data') ? 'active' : '' ?>" href="<?= site_url('/data') ?>" data-nav="data">
                         <i class="bi bi-database me-2"></i><span>Data</span>

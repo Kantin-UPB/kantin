@@ -31,6 +31,8 @@ $routes->get('/menu/restore/(:num)', 'Menu::restore/$1', ['filter' => 'auth']);
 $routes->get('/meja', 'Meja::index', ['filter' => 'auth']);
 $routes->post('/meja/update', 'Meja::updateStatus', ['filter' => 'auth']);
 
+$routes->get('/kitchen', 'Kitchen::index', ['filter' => 'auth']);
+
 $routes->get('/paket-bundling', 'PaketBundling::index', ['filter' => 'auth']);
 $routes->get('/paket-bundling/pending', 'PaketBundling::pending', ['filter' => 'auth']);
 $routes->get('/paket-bundling/cancelled', 'PaketBundling::cancelled', ['filter' => 'auth']);
