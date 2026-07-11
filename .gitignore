@@ -126,4 +126,8 @@ _modules/*
 /results/
 /phpunit.xml
 
+# Database lokal
+*.sql
+database/
+
 CLAUDE.md
