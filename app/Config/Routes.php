@@ -46,6 +46,7 @@ $routes->get('/paket-bundling/cancel/(:num)', 'PaketBundling::cancel/$1', ['filt
 $routes->get('/paket-bundling/delete/(:num)', 'PaketBundling::delete/$1', ['filter' => 'auth']);
 $routes->get('/paket-bundling/draft/(:num)', 'PaketBundling::draft/$1', ['filter' => 'auth']);
 $routes->get('/paket-bundling/restore/(:num)', 'PaketBundling::restore/$1', ['filter' => 'auth']);
+$routes->get('mahasiswa/profile', 'Profile::index', ['filter' => 'clientauth']);
 
 $routes->get('/mahasiswa/login', 'ClientAuth::login');
 $routes->post('/mahasiswa/login', 'ClientAuth::loginProcess');

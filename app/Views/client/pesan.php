@@ -10,6 +10,11 @@
         </div>
         
         <div class="d-flex gap-2">
+            <!-- TOMBOL FITUR PROFILE FAIZAL (Ditambahkan di Sini) -->
+            <a href="<?= base_url('index.php/mahasiswa/profile') ?>" class="btn btn-warning btn-lg shadow-sm px-4 fw-bold text-dark">
+                <i class="bi bi-person-circle me-2"></i> Profil Saya
+            </a>
+
             <button class="btn btn-outline-success btn-lg shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#modalTambahMenu">
                 <i class="bi bi-plus-circle-fill me-2"></i> Tambah Menu Baru
             </button>
@@ -146,7 +151,6 @@
 </div>
 
 <script>
-    // Data dummy awal sengaja dibuat banyak (7 makanan) biar halaman ke-2 langsung aktif otomatis pas dibuka!
     let produkKantin = [
         { id: 1, kategori: 'makanan', nama: 'Nasi Goreng Spesial', harga: 15000, desc: 'Nasi goreng + telur ceplok + ayam suwir', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500' },
         { id: 2, kategori: 'makanan', nama: 'Ayam Geprek Sambal Ijo', harga: 18000, desc: 'Ayam krispi dengan ulekan cabai ijo asli', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500' },
@@ -154,7 +158,6 @@
         { id: 4, kategori: 'makanan', nama: 'Nasi Ayam Bakar', harga: 20000, desc: 'Ayam panggang kecap meresap manis gurih', img: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=500' },
         { id: 5, kategori: 'makanan', nama: 'Soto Ayam Lamongan', harga: 14000, desc: 'Soto kuah kuning kental plus taburan koya', img: 'https://images.unsplash.com/photo-1626804475315-776371f60049?w=500' },
         { id: 6, kategori: 'makanan', nama: 'Bakso Sapi Urat', harga: 16000, desc: 'Pentol urat besar dengan kuah kaldu segar', img: 'https://images.unsplash.com/photo-1583032015879-e5025c7582b0?w=500' },
-        // Menu ke-7 (Akan terlempar ke Page 2 otomatis)
         { id: 7, kategori: 'makanan', nama: 'Bebek Goreng Serundeng', harga: 25000, desc: 'Bebek empuk krispi tabur serundeng kelapa', img: 'https://images.unsplash.com/photo-1516685018646-549198525c1b?w=500' },
         
         { id: 8, kategori: 'minuman', nama: 'Es Jeruk Peras', harga: 6000, desc: 'Jeruk peras murni tanpa pemanis buatan', img: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=500' },
@@ -167,7 +170,6 @@
 
     let keranjangBelanja = [];
     
-    // Status halaman aktif untuk tiap kategori
     let currentPage = {
         makanan: 1,
         minuman: 1,
@@ -175,14 +177,12 @@
         promo: 1
     };
     
-    const limitPerHalaman = 6; // Batas maksimal isi 1 page sesuai permintaanmu
+    const limitPerHalaman = 6;
 
-    // Status urutan harga aktif: 'default', 'asc' (rendah->tinggi), 'desc' (tinggi->rendah)
     let sortHargaAktif = 'default';
 
     function ubahSortHarga(value) {
         sortHargaAktif = value;
-        // Reset semua kategori ke halaman 1 biar urutan baru konsisten dari awal
         currentPage.makanan = 1;
         currentPage.minuman = 1;
         currentPage.dessert = 1;
@@ -198,7 +198,6 @@
     };
 
     function gantiTab(kategori) {
-        // Reset ke page 1 tiap kali pindah tab biar gak bingung
         currentPage[kategori] = 1;
         if (kategori === 'promo') {
             tampilkanPromo();
@@ -301,22 +300,18 @@
         grid.innerHTML = '';
         paginationContainer.innerHTML = '';
 
-        // 1. Filter menu berdasarkan kategori saat ini
         let menuTerfilter = produkKantin.filter(item => item.kategori === kat);
 
-        // 1b. Urutkan berdasarkan harga jika filter sort aktif dipilih
         if (sortHargaAktif === 'asc') {
             menuTerfilter = menuTerfilter.slice().sort((a, b) => a.harga - b.harga);
         } else if (sortHargaAktif === 'desc') {
             menuTerfilter = menuTerfilter.slice().sort((a, b) => b.harga - a.harga);
         }
         
-        // 2. Hitung batasan index item untuk pagination (Rumus potong data 6 item)
         const indexMulai = (currentPage[kat] - 1) * limitPerHalaman;
         const indexSelesai = indexMulai + limitPerHalaman;
         const menuHalamanIni = menuTerfilter.slice(indexMulai, indexSelesai);
 
-        // 3. Render Grid Menu ke HTML
         if(menuHalamanIni.length === 0) {
             grid.innerHTML = `<div class="col-12 text-center text-muted py-5">Belum ada menu di halaman ini.</div>`;
             return;
@@ -344,18 +339,15 @@
             `;
         });
 
-        // 4. Render Tulisan Kecil Navigasi Next Page di Bawah
         const totalHalaman = Math.ceil(menuTerfilter.length / limitPerHalaman);
         if (totalHalaman > 1) {
             let tombolHTML = `<nav aria-label="Page navigation"><ul class="pagination pagination-sm mb-0">`;
             
-            // Tombol Previous
             tombolHTML += `
                 <li class="page-item ${currentPage[kat] === 1 ? 'disabled' : ''}">
                     <a class="page-link text-muted" href="javascript:void(0)" onclick="pindahHalaman('${kat}', ${currentPage[kat] - 1})">Previous</a>
                 </li>`;
 
-            // Angka Halaman
             for (let i = 1; i <= totalHalaman; i++) {
                 tombolHTML += `
                     <li class="page-item ${currentPage[kat] === i ? 'active' : ''}">
@@ -363,7 +355,6 @@
                     </li>`;
             }
 
-            // Tombol Next Page Tulisan Kecil
             tombolHTML += `
                 <li class="page-item ${currentPage[kat] === totalHalaman ? 'disabled' : ''}">
                     <a class="page-link text-primary fw-semibold" href="javascript:void(0)" onclick="pindahHalaman('${kat}', ${currentPage[kat] + 1})">Next Page &raquo;</a>
@@ -377,7 +368,6 @@
     function pindahHalaman(kategori, targetPage) {
         currentPage[kategori] = targetPage;
         tampilkanMenuPerKategori(kategori);
-        // Otomatis scroll smooth sedikit ke atas area tab pas ganti halaman
         document.getElementById('kategoriTab').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
