@@ -28,7 +28,7 @@ class Auth extends BaseController
     {
         // Jika sudah login, arahkan ke dashboard
         if (session()->get('isLoggedIn')) {
-            return redirect()->to('/admin');
+            return redirect()->to('/');
         }
 
         $data = [
@@ -110,7 +110,7 @@ class Auth extends BaseController
             log_message('warning', 'Gagal menyimpan logsystem: ' . $e->getMessage());
         }
 
-        return redirect()->to('/admin')->with('success', 'Selamat datang, ' . $user['username'] . '!');
+        return redirect()->to('/')->with('success', 'Selamat datang, ' . $user['username'] . '!');
     }
 
     /**
