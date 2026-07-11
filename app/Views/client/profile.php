@@ -48,6 +48,12 @@
                                 <label class="text-muted small d-block">Tanggal Terdaftar</label>
                                 <span><?= esc($user['createdat'] ?? 'Baru saja') ?></span>
                             </div>
+                            <div class="mb-3">
+                                <label class="text-muted small d-block">Saldo Poin</label>
+                                <span class="badge bg-warning text-dark fs-6">
+                                    <i class="bi bi-coin"></i> <?= number_format((int) ($user['saldo_poin'] ?? 0), 0, ',', '.') ?> poin
+                                </span>
+                            </div>
                         </div>
                         
                         <hr class="my-4">
