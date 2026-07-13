@@ -147,7 +147,44 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="modalStruk" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
 
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-receipt"></i> Preview Struk
+                </h5>
+
+                <button class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="preview-struk"
+                     style="font-family:monospace;white-space:pre-line;">
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+                    Tutup
+                </button>
+
+                <button class="btn btn-success"
+                    onclick="window.print()">
+                    🖨 Print
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
 </div>
 
 <script>
@@ -497,14 +534,54 @@
     }
 
     function prosesPesan() {
-        alert("🚀 PESANAN BERHASIL DIKIRIM!\n\nSimulasi sukses: Sisi visual antarmuka pemesanan client aman!");
-        keranjangBelanja = [];
-        updateBadge();
-        
-        const modalEl = document.getElementById('modalKeranjang');
-        const modal = bootstrap.Modal.getInstance(modalEl);
-        modal.hide();
-    }
+
+    let total = 0;
+    let isi = "=========== STRUK ==========\n\n";
+
+    keranjangBelanja.forEach(item => {
+
+        const subtotal = item.harga * item.qty;
+        total += subtotal;
+
+        isi += item.nama + "\n";
+        isi += item.qty + " x Rp " +
+               item.harga.toLocaleString('id-ID') +
+               " = Rp " +
+               subtotal.toLocaleString('id-ID') +
+               "\n\n";
+
+    });
+
+    isi += "-----------------------------\n";
+    isi += "TOTAL : Rp " + total.toLocaleString('id-ID') + "\n\n";
+
+    const sekarang = new Date();
+
+    isi += "Tanggal : " + sekarang.toLocaleDateString('id-ID') + "\n";
+    isi += "Jam     : " + sekarang.toLocaleTimeString('id-ID') + "\n\n";
+
+    isi += "Terima kasih sudah berbelanja 😊";
+
+    document.getElementById("preview-struk").innerText = isi;
+
+    // Tutup modal keranjang
+    const modalKeranjang = bootstrap.Modal.getInstance(
+        document.getElementById("modalKeranjang")
+    );
+
+    modalKeranjang.hide();
+
+    // Tampilkan modal struk
+    const modalStruk = new bootstrap.Modal(
+        document.getElementById("modalStruk")
+    );
+
+    modalStruk.show();
+
+    // Kosongkan keranjang
+    keranjangBelanja = [];
+    updateBadge();
+}
 
     document.addEventListener("DOMContentLoaded", function() {
         tampilkanSemua();
