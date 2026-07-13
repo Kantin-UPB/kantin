@@ -1,0 +1,304 @@
+# Dokumentasi Fitur: Promo Bundling — Integrasi Client Side
+**Project:** Kantin UPB (CodeIgniter 4 + Bootstrap 5 + MySQL)  
+**NPM:** 231510033  
+**Nama:** Steven  
+**Modul terkait:** Client Pemesanan (`/pesan`), Paket Bundling  
+**Tanggal:** 11 Juli 2026
+
+---
+
+## 1. Ringkasan
+
+Dokumen ini menjelaskan integrasi fitur **Promo Paket Bundling** ke halaman pemesanan sisi **client** (`/pesan`). Sebelumnya, tab promo belum ada dan halaman client hanya menampilkan data menu dummy via JavaScript. Setelah perubahan ini:
+
+| # | Perubahan | Deskripsi Singkat |
+|---|-----------|-------------------|
+| 1 | **Tab Promo** | Menambah tab kategori ke-4 bernama **Promo** pada halaman pemesanan client. |
+| 2 | **Data dari Database** | Paket bundling berstatus **Active** (`status_id = 5`) diambil dari tabel `paket_bundling` melalui `PaketBundlingModel`. |
+| 3 | **Grid Promo** | Data paket ditampilkan di `#grid-promo` dengan badge hemat, harga coret, daftar isi paket, dan tombol **Beli Paket**. |
+| 4 | **Keranjang Belanja** | Paket promo dapat ditambahkan ke keranjang secara terpisah dari menu biasa (dengan penanda `tipe: 'paket'`). |
+
+Fitur ini melanjutkan modul **Promo Paket Bundling** yang sudah dibuat di sisi admin (lihat dokumentasi `231510018_Christ_DiskonMenu_PromoPaketBundling`).
+
+---
+
+## 2. Prasyarat
+
+Sebelum fitur client side ini berfungsi, pastikan hal berikut sudah tersedia:
+
+1. Migration tabel `paket_bundling` dan `paket_bundling_item` sudah dijalankan:
+   ```bash
+   php spark migrate
+   ```
+2. Modul admin **Promo Bundling** sudah aktif (`PaketBundlingModel`, `PaketBundling` controller, view admin).
+3. Minimal **1 paket bundling** berstatus **Active** (`status_id = 5`) sudah dibuat dan di-activate dari halaman admin `/paket-bundling`.
+4. Halaman client `/pesan` sudah tersedia (mockup dasar dari dokumentasi `231510032_Chasly_juwita_wijaya_Mockup_ Pemesanan_Client-Side_Pagination`).
+
+---
+
+## 3. Perubahan Kode
+
+| File | Status | Keterangan |
+|---|---|---|
+| `app/Controllers/pesan.php` | **EDIT** | Memanggil `PaketBundlingModel::getActivePaketList()` dan mengirim data `paketPromo` ke view |
+| `app/Views/client/pesan.php` | **EDIT** | Tab Promo, grid `#grid-promo`, pagination, fungsi JS `tampilkanPromo()` & `tambahPaketKeKeranjang()` |
+| `app/Config/Routes.php` | **EDIT** | Menambahkan kembali route mahasiswa (`/mahasiswa/login`, register, logout) yang sempat hilang |
+
+> **Catatan:** Kategori menu (Makanan, Minuman, Dessert) pada tab lain masih menggunakan data dummy JavaScript. Hanya tab **Promo** yang sudah terhubung ke database.
+
+---
+
+## 4. Detail Perubahan per File
+
+### 4.1 `app/Controllers/pesan.php`
+
+Controller `Pesan` diperbarui agar mengambil paket bundling aktif dari database:
+
+```php
+use App\Models\PaketBundlingModel;
+
+public function index()
+{
+    $paketModel = new PaketBundlingModel();
+    $paketList  = $paketModel->getActivePaketList();
+
+    $paketPromo = array_map(static function (array $paket): array {
+        return [
+            'id'           => (int) $paket['id'],
+            'nama'         => $paket['nama_paket'],
+            'desc'         => $paket['deskripsi'] ?? '',
+            'harga'        => (float) $paket['harga_paket'],
+            'harga_normal' => (float) ($paket['harga_normal'] ?? 0),
+            'hemat'        => (float) ($paket['hemat'] ?? 0),
+            'persen_hemat' => (int) ($paket['persen_hemat'] ?? 0),
+            'img'          => ! empty($paket['url_gambar']) ? base_url($paket['url_gambar']) : '',
+            'items'        => $paket['items'] ?? [],
+        ];
+    }, $paketList);
+
+    $data = [
+        'title'      => 'Client Side - Halaman Pesan',
+        'paketPromo' => $paketPromo,
+    ];
+
+    return view('client/pesan', $data);
+}
+```
+
+**Penjelasan mapping data:**
+
+| Key JS | Sumber Database | Fungsi |
+|---|---|---|
+| `id` | `paket_bundling.id` | Identitas unik paket |
+| `nama` | `paket_bundling.nama_paket` | Nama tampilan di kartu promo |
+| `desc` | `paket_bundling.deskripsi` | Deskripsi singkat paket |
+| `harga` | `paket_bundling.harga_paket` | Harga jual promo |
+| `harga_normal` | Dihitung model | Total harga menu asli dalam paket |
+| `hemat` | Dihitung model | Selisih harga normal − harga paket |
+| `persen_hemat` | Dihitung model | Persentase hemat (untuk badge) |
+| `img` | `paket_bundling.url_gambar` | URL gambar lengkap via `base_url()` |
+| `items` | `paket_bundling_item` + join `menu` | Daftar menu & qty dalam paket |
+
+Perhitungan `harga_normal`, `hemat`, dan `persen_hemat` menggunakan method `withComputedTotals()` yang sudah ada di `PaketBundlingModel` (sama dengan sisi admin).
+
+### 4.2 `app/Views/client/pesan.php`
+
+#### A. Struktur UI — Tab & Grid Promo
+
+Ditambahkan tab ke-4 dan panel konten promo:
+
+```html
+<button class="nav-link fw-bold" id="promo-tab" ... onclick="gantiTab('promo')">
+    <i class="bi bi-stars me-2"></i>Promo
+</button>
+
+<div class="tab-pane fade" id="promo">
+    <div class="row g-4" id="grid-promo"></div>
+    <div class="d-flex justify-content-center mt-4" id="pagination-promo"></div>
+</div>
+```
+
+- Icon tab menggunakan `bi-stars` (bukan icon dessert).
+- Pagination promo memiliki ID sendiri: `#pagination-promo` (bukan `#pagination-dessert`).
+
+#### B. Injeksi Data PHP → JavaScript
+
+Data paket dari controller di-pass ke JavaScript:
+
+```js
+let paketPromo = <?= json_encode($paketPromo ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+```
+
+State pagination promo ditambahkan ke objek `currentPage`:
+
+```js
+let currentPage = {
+    makanan: 1,
+    minuman: 1,
+    dessert: 1,
+    promo: 1
+};
+```
+
+#### C. Fungsi JavaScript Baru / Diperbarui
+
+| Fungsi | Deskripsi |
+|---|---|
+| `tampilkanPromo()` | Render kartu paket bundling ke `#grid-promo`, mendukung sort harga & pagination (6 item/halaman) |
+| `tambahPaketKeKeranjang(idPaket)` | Menambahkan paket promo ke keranjang dengan `tipe: 'paket'` |
+| `gantiTab(kategori)` | **EDIT** — Jika kategori `'promo'`, memanggil `tampilkanPromo()` |
+| `tampilkanMenuPerKategori(kat)` | **EDIT** — Redirect ke `tampilkanPromo()` jika `kat === 'promo'` |
+| `tampilkanSemua()` | **EDIT** — Juga memanggil `tampilkanPromo()` saat load awal |
+| `ubahSortHarga(value)` | **EDIT** — Reset halaman promo ke 1 saat sort berubah |
+| `tambahKeKeranjang(idProduk)` | **EDIT** — Menandai item menu dengan `tipe: 'menu'` agar tidak bentrok ID dengan paket |
+
+#### D. Tampilan Kartu Promo
+
+Setiap kartu paket menampilkan:
+
+- Gambar paket (atau placeholder jika `url_gambar` kosong)
+- Badge merah **"Hemat X%"** jika `persen_hemat > 0`
+- Nama paket & deskripsi
+- Daftar isi paket (contoh: `1x Nasi Goreng`, `2x Es Teh`)
+- Harga normal dicoret + harga paket (jika ada hemat)
+- Tombol **Beli Paket** → `tambahPaketKeKeranjang(id)`
+
+### 4.3 `app/Config/Routes.php`
+
+Ditambahkan kembali route autentikasi mahasiswa (client):
+
+| Method | URL | Controller |
+|---|---|---|
+| GET | `/mahasiswa/login` | `ClientAuth::login` |
+| POST | `/mahasiswa/login` | `ClientAuth::loginProcess` |
+| GET | `/mahasiswa/register` | `ClientAuth::register` |
+| POST | `/mahasiswa/register` | `ClientAuth::registerProcess` |
+| GET | `/mahasiswa/logout` | `ClientAuth::logout` |
+
+Route `/pesan` tetap **tanpa filter auth** (public preview), konsisten dengan mockup sebelumnya.
+
+---
+
+## 5. Alur Penggunaan (Client / Mahasiswa)
+
+1. Buka halaman **`/pesan`** (atau login mahasiswa lalu redirect ke `/pesan`).
+2. Klik tab **Promo** (icon bintang).
+3. Sistem menampilkan daftar paket bundling **Active** dari database di grid promo.
+4. (Opsional) Gunakan dropdown **Urutkan Harga** — sort berlaku juga untuk tab promo.
+5. Klik **Beli Paket** pada kartu promo → paket masuk ke keranjang.
+6. Klik **Lihat Keranjang** → paket promo tampil bersama menu biasa, total dihitung dari `harga × qty`.
+7. Klik **Langsung Pesan!** → simulasi checkout (belum tersimpan ke database transaksi).
+
+---
+
+## 6. Integrasi Keranjang Belanja
+
+Item di keranjang sekarang memiliki penanda tipe:
+
+```js
+// Menu biasa (dummy JS)
+{ id: 1, nama: '...', harga: 15000, qty: 1, tipe: 'menu' }
+
+// Paket bundling (dari database)
+{ id: 3, nama: 'Paket Hemat', harga: 16000, qty: 1, tipe: 'paket' }
+```
+
+**Alasan pemisahan tipe:**
+- ID menu dummy (1–11) bisa bentrok dengan ID paket di database.
+- Saat menambah qty, sistem membedakan item berdasarkan kombinasi `tipe + id`.
+- Memudahkan pengembangan lanjutan (checkout backend bisa memproses menu vs paket secara berbeda).
+
+---
+
+## 7. Logika Pagination & Sort (Tab Promo)
+
+Mengikuti pola yang sama dengan tab Makanan/Minuman/Dessert:
+
+```
+limitPerHalaman = 6
+indexMulai      = (currentPage.promo - 1) × 6
+indexSelesai    = indexMulai + 6
+totalHalaman    = CEIL(jumlah_paket / 6)
+```
+
+Sort harga (`asc` / `desc`) diterapkan pada field `harga` (harga paket), bukan harga normal.
+
+---
+
+## 8. Struktur File yang Terdampak
+
+```
+app/
+├── Config/
+│   └── Routes.php                    [EDIT]
+├── Controllers/
+│   └── pesan.php                     [EDIT]
+└── Views/
+    └── client/
+        └── pesan.php                 [EDIT]
+
+public/uploads/
+├── menus/                            [TEST] gambar menu uji
+└── paket_bundling/                   [TEST] gambar paket uji
+```
+
+---
+
+## 9. Instalasi / Pengujian
+
+### 9.1 Langkah Setup
+
+1. Pastikan migration paket bundling sudah jalan (`php spark migrate`).
+2. Login admin → buka **Promo Bundling** → buat paket → **Activate**.
+3. Buka `/pesan` → klik tab **Promo**.
+4. Verifikasi kartu paket tampil dengan harga, badge hemat, dan isi paket.
+
+### 9.2 Checklist Pengujian
+
+| # | Skenario | Hasil Diharapkan |
+|---|---|---|
+| 1 | Buka tab Promo, ada paket Active | Kartu paket tampil di `#grid-promo` |
+| 2 | Tidak ada paket Active | Pesan *"Belum ada paket promo aktif."* |
+| 3 | Paket > 6 item | Pagination promo muncul |
+| 4 | Sort Termurah → Termahal | Urutan kartu promo berubah |
+| 5 | Klik Beli Paket | Item masuk keranjang, badge qty bertambah |
+| 6 | Beli paket yang sama 2× | Qty paket di keranjang = 2 |
+| 7 | Campur menu + paket di keranjang | Total harga = jumlah semua subtotal |
+
+### 9.3 Commit Terkait
+
+```
+38853bd — Bundling on Client Side
+  - Adding Promo tab on client side
+  - Calling Promo Bundling from Database
+  - Readded Missing Routes
+```
+
+---
+
+## 10. Batasan & Rekomendasi Pengembangan Lanjutan
+
+| # | Batasan Saat Ini | Rekomendasi |
+|---|---|---|
+| 1 | Tab Makanan/Minuman/Dessert masih data dummy JS | Integrasikan dengan tabel `menu` via `MenuModel` (mirip pola paket promo) |
+| 2 | Checkout (`prosesPesan()`) masih simulasi alert | Buat endpoint POST untuk menyimpan transaksi & detail pesanan ke database |
+| 3 | Diskon menu individual belum tampil di client | Tampilkan menu dengan `diskon > 0` menggunakan `hitung_harga_diskon()` |
+| 4 | Keranjang hanya tersimpan di memori browser | Persist ke session/localStorage atau simpan ke DB setelah login mahasiswa |
+| 5 | Paket nonaktif tidak otomatis hilang dari keranjang | Validasi stok/status paket saat checkout |
+| 6 | Belum ada halaman detail paket di client | Tambah modal/detail view menampilkan semua item paket sebelum beli |
+
+---
+
+## 11. Keterkaitan dengan Dokumentasi Lain
+
+| Dokumen | Hubungan |
+|---|---|
+| `231510018_Christ_DiskonMenu_PromoPaketBundling` | Modul admin paket bundling & struktur database (prasyarat utama) |
+| `231510032_Chasly_juwita_wijaya_Mockup_ Pemesanan_Client-Side_Pagination` | Mockup dasar halaman `/pesan`, grid, pagination, keranjang |
+| `231510019Jovan_LoginPage.md` | Autentikasi mahasiswa client side |
+
+---
+
+## 12. Kesimpulan
+
+Integrasi Promo Bundling di client side menghubungkan data admin (`paket_bundling`) ke halaman pemesanan mahasiswa melalui tab **Promo**. Data diambil server-side via `PaketBundlingModel`, di-render client-side dengan pagination & sort yang konsisten dengan tab menu lainnya, dan dapat ditambahkan ke keranjang belanja sebagai item bertipe `paket`. Langkah selanjutnya adalah mengintegrasikan menu biasa ke database dan menghubungkan proses checkout ke backend transaksi.
