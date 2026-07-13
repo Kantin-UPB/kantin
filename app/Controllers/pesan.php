@@ -3,13 +3,17 @@
 namespace App\Controllers;
 
 use App\Models\PaketBundlingModel;
+use App\Models\MenuModel;
 
 class Pesan extends BaseController
 {
     public function index()
     {
         $paketModel = new PaketBundlingModel();
-        $paketList  = $paketModel->getActivePaketList();
+        $menuModel  = new MenuModel();
+
+        $paketList = $paketModel->getActivePaketList();
+        $menuList  = $menuModel->getActiveMenuList();
 
         $paketPromo = array_map(static function (array $paket): array {
             return [
